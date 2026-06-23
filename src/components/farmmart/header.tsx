@@ -148,30 +148,35 @@ export function Header() {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuLabel className="text-xs text-muted-foreground">
-                Switch perspective
-              </DropdownMenuLabel>
-              {(Object.keys(ROLE_LABELS) as Role[]).map((r) => (
-                <DropdownMenuItem
-                  key={r}
-                  onClick={() => setRole(r)}
-                  className={cn(
-                    "flex items-center justify-between",
-                    role === r && "bg-accent"
-                  )}
-                >
-                  <span className="flex items-center gap-2">
-                    <Leaf className="size-3.5 text-primary" />
-                    {ROLE_LABELS[r]}
-                  </span>
-                  {role === r && (
-                    <Badge variant="secondary" className="text-[10px]">
-                      Active
-                    </Badge>
-                  )}
-                </DropdownMenuItem>
-              ))}
-              <DropdownMenuSeparator />
+              {/* Role switcher — hidden for buyers (they stay in buyer view) */}
+              {role !== "BUYER" && (
+                <>
+                  <DropdownMenuLabel className="text-xs text-muted-foreground">
+                    Switch perspective
+                  </DropdownMenuLabel>
+                  {(Object.keys(ROLE_LABELS) as Role[]).map((r) => (
+                    <DropdownMenuItem
+                      key={r}
+                      onClick={() => setRole(r)}
+                      className={cn(
+                        "flex items-center justify-between",
+                        role === r && "bg-accent"
+                      )}
+                    >
+                      <span className="flex items-center gap-2">
+                        <Leaf className="size-3.5 text-primary" />
+                        {ROLE_LABELS[r]}
+                      </span>
+                      {role === r && (
+                        <Badge variant="secondary" className="text-[10px]">
+                          Active
+                        </Badge>
+                      )}
+                    </DropdownMenuItem>
+                  ))}
+                  <DropdownMenuSeparator />
+                </>
+              )}
               <DropdownMenuItem
                 onClick={logout}
                 className="flex items-center gap-2 text-destructive focus:text-destructive"
