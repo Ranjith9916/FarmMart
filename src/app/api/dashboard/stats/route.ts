@@ -1,15 +1,25 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 
-// GET /api/dashboard/stats — aggregate farmer dashboard stats
-export async function GET() {
+// GET /api/dashboard/stats?userId=... — aggregate farmer dashboard stats
+export async function GET(req: NextRequest) {
   try {
+    const { searchParams } = new URL(req.url);
+    const userId = searchParams.get("userId");
+
+    if (!userId) {
+      return NextResponse.json({ error: "userId is required" }, { status: 400 });
+    }
+
+    // Products belonging to this farmer
     const products = await db.product.findMany({
+      where: { farmerId: userId },
       orderBy: { createdAt: "desc" },
     });
 
+    // Orders where this user is the farmer
     const orders = await db.order.findMany({
-      where: { status: { not: "CANCELLED" } },
+      where: { farmerId: userId, status: { not: "CANCELLED" } },
       include: { items: true },
       orderBy: { createdAt: "desc" },
     });
@@ -17,7 +27,9 @@ export async function GET() {
     const totalProducts = products.length;
     const totalStock = products.reduce((s, p) => s + p.stock, 0);
     const totalSold = products.reduce((s, p) => s + p.sold, 0);
-    const totalRevenue = orders.reduce((s, o) => s + o.total, 0);
+    const orderRevenue = orders.reduce((s, o) => s + o.total, 0);
+    const productRevenue = products.reduce((s, p) => s + p.sold * p.price, 0);
+    const totalRevenue = orderRevenue + productRevenue;
     const pendingOrders = orders.filter(
       (o) => o.status === "PENDING" || o.status === "CONFIRMED" || o.status === "PACKED"
     ).length;
@@ -32,6 +44,11 @@ export async function GET() {
         catMap.set(cat, (catMap.get(cat) || 0) + it.price * it.quantity);
       }
     }
+    // Also include revenue from sold products
+    for (const p of products) {
+      const cat = p.category;
+      catMap.set(cat, (catMap.get(cat) || 0) + p.sold * p.price);
+    }
     const revenueByCategory = Array.from(catMap.entries())
       .map(([category, revenue]) => ({ category, revenue: Math.round(revenue) }))
       .sort((a, b) => b.revenue - a.revenue);
@@ -45,14 +62,10 @@ export async function GET() {
       const weekOrders = orders.filter(
         (o) => o.createdAt >= start && o.createdAt < end
       );
-      // Synthetic baseline so the chart looks meaningful even with few seeded orders
-      const synthetic = 18000 + Math.sin(w * 1.3) * 9000 + (7 - w) * 1400;
-      const sales = Math.round(
-        weekOrders.reduce((s, o) => s + o.total, 0) + synthetic
-      );
+      const weekRev = weekOrders.reduce((s, o) => s + o.total, 0);
       weeks.push({
         date: end.toLocaleDateString("en-IN", { day: "2-digit", month: "short" }),
-        sales,
+        sales: Math.round(weekRev),
       });
     }
     const salesTrend = weeks;
@@ -71,7 +84,6 @@ export async function GET() {
         prodRevMap.set(it.productId, cur);
       }
     }
-    // Merge with seeded product.sold for richer data
     for (const p of products) {
       const cur = prodRevMap.get(p.id) || { name: p.name, sold: 0, revenue: 0 };
       cur.sold += p.sold;
@@ -116,7 +128,7 @@ export async function GET() {
       totalProducts,
       totalStock,
       totalSales: totalSold,
-      totalRevenue: Math.round(totalRevenue + products.reduce((s, p) => s + p.sold * p.price, 0)),
+      totalRevenue: Math.round(totalRevenue),
       pendingOrders,
       lowStockCount,
       revenueByCategory,

@@ -5,25 +5,23 @@ import { db } from "@/lib/db";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { productId, rating, comment } = body;
-    if (!productId || !rating || !comment) {
+    const { productId, rating, comment, userId } = body;
+    if (!productId || !rating || !comment || !userId) {
       return NextResponse.json(
-        { error: "productId, rating, comment are required" },
+        { error: "productId, rating, comment, and userId are required" },
         { status: 400 }
       );
     }
-    // Use the demo buyer as the reviewer
-    const buyer = await db.user.findUnique({
-      where: { email: "buyer@farmmart.io" },
-    });
-    if (!buyer) {
-      return NextResponse.json({ error: "No buyer user found" }, { status: 400 });
+
+    const user = await db.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     const review = await db.review.create({
       data: {
         productId,
-        userId: buyer.id,
+        userId: user.id,
         rating: parseInt(rating),
         comment,
       },

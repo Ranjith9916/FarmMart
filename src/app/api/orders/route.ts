@@ -1,38 +1,35 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 
-// GET /api/orders?role=BUYER|FARMER — list orders for the demo user
+// GET /api/orders?userId=...&role=BUYER|FARMER — list orders for a user
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
+    const userId = searchParams.get("userId");
     const role = searchParams.get("role") || "BUYER";
 
-    const buyer = await db.user.findUnique({
-      where: { email: "buyer@farmmart.io" },
-    });
+    if (!userId) {
+      return NextResponse.json({ orders: [] });
+    }
 
     let orders;
-    if (role === "FARMER") {
-      const farmer = await db.user.findUnique({
-        where: { email: "ravi@farmmart.io" },
-      });
-      // Show all orders as "sales" for the demo farmer perspective (any farmer)
+    if (role === "FARMER" || role === "WHOLESALER") {
+      // Show orders where this user is the farmer
       orders = await db.order.findMany({
+        where: { farmerId: userId },
         orderBy: { createdAt: "desc" },
         include: {
           items: true,
           buyer: { select: { id: true, name: true, location: true } },
         },
       });
-      void farmer;
     } else {
-      orders = buyer
-        ? await db.order.findMany({
-            where: { buyerId: buyer.id },
-            orderBy: { createdAt: "desc" },
-            include: { items: true, farmer: { select: { id: true, name: true } } },
-          })
-        : [];
+      // Buyer: show their own orders
+      orders = await db.order.findMany({
+        where: { buyerId: userId },
+        orderBy: { createdAt: "desc" },
+        include: { items: true, farmer: { select: { id: true, name: true } } },
+      });
     }
 
     return NextResponse.json({ orders });
@@ -46,7 +43,13 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { items, shippingAddress, paymentMethod } = body as {
+    const {
+      userId,
+      items,
+      shippingAddress,
+      paymentMethod,
+    } = body as {
+      userId: string;
       items: {
         productId: string;
         name: string;
@@ -60,15 +63,16 @@ export async function POST(req: NextRequest) {
       paymentMethod: string;
     };
 
+    if (!userId) {
+      return NextResponse.json({ error: "User not authenticated" }, { status: 401 });
+    }
     if (!items || items.length === 0) {
       return NextResponse.json({ error: "Cart is empty" }, { status: 400 });
     }
 
-    const buyer = await db.user.findUnique({
-      where: { email: "buyer@farmmart.io" },
-    });
+    const buyer = await db.user.findUnique({ where: { id: userId } });
     if (!buyer) {
-      return NextResponse.json({ error: "Buyer not found" }, { status: 400 });
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     const subtotal = items.reduce((s, it) => s + it.price * it.quantity, 0);

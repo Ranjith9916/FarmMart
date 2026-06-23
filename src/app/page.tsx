@@ -1,8 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
 import { useStore } from "@/lib/store";
-import { api } from "@/lib/api";
 import { Header } from "@/components/farmmart/header";
 import { Footer } from "@/components/farmmart/footer";
 import { LoginView } from "@/components/farmmart/login-view";
@@ -17,11 +15,6 @@ import { InsightsView } from "@/components/farmmart/insights-view";
 
 export default function Home() {
   const { authed, view } = useStore();
-
-  // Ensure the database is seeded on first load (idempotent)
-  useEffect(() => {
-    api("/api/seed", { method: "POST" }).catch(() => {});
-  }, []);
 
   // Not authenticated — show the login / signup page (no header/footer)
   if (!authed) {

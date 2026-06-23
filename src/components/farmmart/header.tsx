@@ -255,7 +255,6 @@ export function Header() {
         <AddProductDialog
           open={sellOpen}
           onOpenChange={setSellOpen}
-          role={role}
           onSaved={() => {
             setView("dashboard");
           }}

@@ -41,15 +41,13 @@ import { toast } from "sonner";
 import type { Order } from "@/lib/types";
 
 export function CartView() {
-  const { cart, updateQuantity, removeFromCart, clearCart, setView } = useStore();
+  const { cart, updateQuantity, removeFromCart, clearCart, setView, authUser } = useStore();
   const totals = cartTotals(cart);
 
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [placing, setPlacing] = useState(false);
   const [placed, setPlaced] = useState<Order | null>(null);
-  const [address, setAddress] = useState(
-    "14 MG Road, Pune, Maharashtra 411001"
-  );
+  const [address, setAddress] = useState("");
   const [payment, setPayment] = useState("UPI");
   const [card, setCard] = useState({ number: "", name: "", exp: "", cvv: "" });
 
@@ -67,6 +65,7 @@ export function CartView() {
       const data = await api<{ order: Order }>("/api/orders", {
         method: "POST",
         body: JSON.stringify({
+          userId: authUser?.id,
           items: cart.map((c) => ({
             productId: c.productId,
             name: c.name,

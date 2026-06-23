@@ -49,15 +49,21 @@ const STATUS_ICON: Record<string, typeof Clock> = {
 
 export function OrdersView() {
   const role = useStore((s) => s.role);
+  const userId = useStore((s) => s.authUser?.id);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState<string | null>(null);
 
   const load = useCallback(async () => {
+    if (!userId) {
+      setOrders([]);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
       const data = await api<{ orders: Order[] }>(
-        `/api/orders?role=${role}`
+        `/api/orders?userId=${userId}&role=${role}`
       );
       setOrders(data.orders);
     } catch {
@@ -65,7 +71,7 @@ export function OrdersView() {
     } finally {
       setLoading(false);
     }
-  }, [role]);
+  }, [role, userId]);
 
   useEffect(() => {
     load();

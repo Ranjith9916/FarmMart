@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import { Loader2, Leaf, Sprout, ImagePlus, Tag, IndianRupee } from "lucide-react";
 import { toast } from "sonner";
+import { useStore } from "@/lib/store";
 
 export interface ProductFormData {
   id?: string;
@@ -70,8 +71,6 @@ interface ProductToEdit {
 interface AddProductDialogProps {
   open: boolean;
   onOpenChange: (b: boolean) => void;
-  /** Role of the active user — used to resolve the owner farmer id */
-  role: string;
   /** Existing product to edit. When null/undefined, the dialog is in "create" mode */
   editProduct?: ProductToEdit | null;
   /** Called after a successful create/update */
@@ -81,21 +80,13 @@ interface AddProductDialogProps {
 export function AddProductDialog({
   open,
   onOpenChange,
-  role,
   editProduct,
   onSaved,
 }: AddProductDialogProps) {
   const [form, setForm] = useState<ProductFormData>(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
-  const [farmerId, setFarmerId] = useState("");
-
-  // Resolve the current user's id from /api/me based on the active role
-  useEffect(() => {
-    if (!open) return;
-    api<{ user: { id: string } }>(`/api/me?role=${role}`)
-      .then((d) => setFarmerId(d.user.id))
-      .catch(() => {});
-  }, [open, role]);
+  const authUser = useStore((s) => s.authUser);
+  const farmerId = authUser?.id || "";
 
   // Populate the form when opening for edit, or reset when opening for create
   useEffect(() => {
@@ -116,9 +107,12 @@ export function AddProductDialog({
         tags: editProduct.tags || "",
       });
     } else {
-      setForm(EMPTY_FORM);
+      setForm({
+        ...EMPTY_FORM,
+        location: authUser?.location || "",
+      });
     }
-  }, [open, editProduct]);
+  }, [open, editProduct, authUser]);
 
   const submit = async () => {
     if (!form.name.trim()) {

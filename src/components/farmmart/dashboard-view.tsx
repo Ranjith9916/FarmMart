@@ -63,23 +63,30 @@ interface ProductRow {
 }
 
 export function DashboardView() {
-  const role = useStore((s) => s.role);
+  const userId = useStore((s) => s.authUser?.id);
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [editOpen, setEditOpen] = useState(false);
   const [editing, setEditing] = useState<ProductRow | null>(null);
 
   const load = useCallback(async () => {
+    if (!userId) {
+      setStats(null);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
-      const data = await api<DashboardStats>("/api/dashboard/stats");
+      const data = await api<DashboardStats>(
+        `/api/dashboard/stats?userId=${userId}`
+      );
       setStats(data);
     } catch {
       setStats(null);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [userId]);
 
   useEffect(() => {
     load();
@@ -350,7 +357,6 @@ export function DashboardView() {
       <AddProductDialog
         open={editOpen}
         onOpenChange={(b) => (b ? setEditOpen(true) : closeDialog())}
-        role={role}
         editProduct={editing}
         onSaved={() => {
           closeDialog();

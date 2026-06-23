@@ -46,7 +46,7 @@ interface FullProduct extends Product {
 }
 
 export function ProductDetailDialog() {
-  const { activeProductId, setActiveProduct, addToCart, setView } = useStore();
+  const { activeProductId, setActiveProduct, addToCart, setView, authUser } = useStore();
   const [product, setProduct] = useState<FullProduct | null>(null);
   const [loading, setLoading] = useState(false);
   const [qty, setQty] = useState(1);
@@ -68,7 +68,7 @@ export function ProductDetailDialog() {
   }, [activeProductId]);
 
   const submitReview = async () => {
-    if (!product || !reviewComment.trim()) return;
+    if (!product || !reviewComment.trim() || !authUser) return;
     setSubmitting(true);
     try {
       await api("/api/reviews", {
@@ -77,6 +77,7 @@ export function ProductDetailDialog() {
           productId: product.id,
           rating: reviewRating,
           comment: reviewComment,
+          userId: authUser.id,
         }),
       });
       toast.success("Review submitted!");
