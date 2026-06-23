@@ -36,6 +36,7 @@ import {
 } from "recharts";
 import { toast } from "sonner";
 import { AddProductDialog } from "./add-product-dialog";
+import { BuyerDashboard } from "./buyer-dashboard-view";
 
 const PIE_COLORS = [
   "oklch(0.55 0.13 150)",
@@ -63,6 +64,17 @@ interface ProductRow {
 }
 
 export function DashboardView() {
+  const role = useStore((s) => s.role);
+
+  // Buyers and transporters see a buyer-style dashboard
+  if (role === "BUYER" || role === "TRANSPORTER") {
+    return <BuyerDashboard />;
+  }
+
+  return <FarmDashboard />;
+}
+
+function FarmDashboard() {
   const userId = useStore((s) => s.authUser?.id);
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);

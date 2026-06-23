@@ -51,7 +51,7 @@ export const useStore = create<FarmMartState>()(
       authed: false,
       authUser: null,
       login: (user) =>
-        set({ authed: true, authUser: user, role: user.role, view: "marketplace" }),
+        set({ authed: true, authUser: user, role: user.role, view: "dashboard" }),
       logout: () =>
         set({
           authed: false,

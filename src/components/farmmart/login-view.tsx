@@ -71,21 +71,30 @@ export function LoginView() {
 
     setLoading(true);
     try {
-      const url = mode === "login" ? "/api/auth/login" : "/api/auth/register";
-      const body =
-        mode === "login"
-          ? { email, password }
-          : { name, email, password, role, location, phone };
-      const data = await api<{ user: AuthUser; error?: string }>(url, {
-        method: "POST",
-        body: JSON.stringify(body),
-      });
-      login(data.user);
-      toast.success(
-        mode === "login"
-          ? `Welcome back, ${data.user.name.split(" ")[0]}!`
-          : `Account created. Welcome to FarmMart, ${data.user.name.split(" ")[0]}!`
-      );
+      if (mode === "login") {
+        // Sign in — authenticate and enter the app
+        const data = await api<{ user: AuthUser; error?: string }>(
+          "/api/auth/login",
+          {
+            method: "POST",
+            body: JSON.stringify({ email, password }),
+          }
+        );
+        login(data.user);
+        toast.success(`Welcome back, ${data.user.name.split(" ")[0]}!`);
+      } else {
+        // Sign up — create the account, then switch to sign-in mode
+        await api("/api/auth/register", {
+          method: "POST",
+          body: JSON.stringify({ name, email, password, role, location, phone }),
+        });
+        toast.success(
+          "Account created successfully! Please sign in to continue."
+        );
+        // Reset to sign-in mode, keep the email pre-filled for convenience
+        setMode("login");
+        setPassword("");
+      }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Authentication failed");
     } finally {
