@@ -1,0 +1,15 @@
+{
+  "success": true,
+  "query": "pomegranate",
+  "count": 1,
+  "ranked": false,
+  "results": [
+    {
+      "original_url": "https://sfile.chatglm.cn/images-ppt/7256e0ae66be.jpg",
+      "caption": "",
+      "source": "nicolaspujol.com",
+      "original_width": "1440px",
+      "original_height": "1440px"
+    }
+  ]
+}

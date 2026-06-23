@@ -1,0 +1,15 @@
+{
+  "success": true,
+  "query": "dry chickpeas garbanzo beans",
+  "count": 1,
+  "ranked": false,
+  "results": [
+    {
+      "original_url": "https://sfile.chatglm.cn/images-ppt/e27c9607c397.jpg",
+      "caption": "",
+      "source": "Amazon.com",
+      "original_width": "894px",
+      "original_height": "992px"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "success": true,
+  "query": "fresh ripe bananas bunch",
+  "count": 1,
+  "ranked": false,
+  "results": [
+    {
+      "original_url": "https://sfile.chatglm.cn/images-ppt/1adbbf65c640.jpg",
+      "caption": "",
+      "source": "The Kitchn",
+      "original_width": "1500px",
+      "original_height": "1000px"
+    }
+  ]
+}

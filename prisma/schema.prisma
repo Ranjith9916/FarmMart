@@ -1,0 +1,137 @@
+// FarmMart — AI-powered agriculture marketplace schema
+// Learn more: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  role      String   @default("BUYER") // BUYER | FARMER | WHOLESALER | TRANSPORTER
+  phone     String?
+  location  String?
+  avatar    String?
+  rating    Float    @default(5.0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  products Product[]
+  orders   Order[]   @relation("BuyerOrders")
+  sales    Order[]   @relation("FarmerSales")
+  reviews  Review[]
+  crops    CropRecommendation[]
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  name        String
+  category    String // Grains | Vegetables | Fruits | Dairy | Spices | Pulses | Nuts | Herbs
+  description String
+  price       Float    // price per unit
+  unit        String   @default("kg") // kg | quintal | dozen | litre | ton
+  stock       Float    @default(0)
+  imageUrl    String
+  location    String
+  organic     Boolean  @default(false)
+  harvestDate String?
+  tags        String?  // comma separated
+  rating      Float    @default(4.5)
+  reviewCount Int      @default(0)
+  sold        Float    @default(0)
+  active      Boolean  @default(true)
+  farmerId    String
+  farmer      User     @relation(fields: [farmerId], references: [id])
+  orderItems  OrderItem[]
+  reviews     Review[]
+  priceHistory PriceSnapshot[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([category])
+  @@index([farmerId])
+}
+
+model Order {
+  id            String      @id @default(cuid())
+  orderNumber   String      @unique
+  buyerId       String
+  buyer         User        @relation("BuyerOrders", fields: [buyerId], references: [id])
+  farmerId      String
+  farmer        User        @relation("FarmerSales", fields: [farmerId], references: [id])
+  items         OrderItem[]
+  subtotal      Float
+  shipping      Float       @default(0)
+  tax           Float       @default(0)
+  total         Float
+  status        String      @default("PENDING") // PENDING | CONFIRMED | PACKED | SHIPPED | DELIVERED | CANCELLED
+  paymentStatus String      @default("UNPAID") // UNPAID | PAID | REFUNDED
+  paymentMethod String      @default("COD")
+  shippingAddress String
+  transporterId String?
+  trackingNote  String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([buyerId])
+  @@index([farmerId])
+  @@index([status])
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  name      String
+  price     Float
+  quantity  Float
+  unit      String
+  imageUrl  String
+  farmerId  String
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  rating    Int
+  comment   String
+  createdAt DateTime @default(now())
+
+  @@index([productId])
+}
+
+model PriceSnapshot {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  price     Float
+  recordedAt DateTime @default(now())
+}
+
+model CropRecommendation {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  prompt    String
+  response  String
+  cropType  String?
+  createdAt DateTime @default(now())
+}
+
+model WeatherCache {
+  id        String   @id @default(cuid())
+  location  String   @unique
+  payload   String   // JSON string
+  updatedAt DateTime @updatedAt
+}

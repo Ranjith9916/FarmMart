@@ -1,0 +1,15 @@
+{
+  "success": true,
+  "query": "raw almonds in shell nuts",
+  "count": 1,
+  "ranked": false,
+  "results": [
+    {
+      "original_url": "https://sfile.chatglm.cn/images-ppt/2f199b3ef558.jpg",
+      "caption": "",
+      "source": "Amazon.com",
+      "original_width": "1766px",
+      "original_height": "2560px"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "success": true,
+  "query": "fresh paneer cheese block indian",
+  "count": 1,
+  "ranked": false,
+  "results": [
+    {
+      "original_url": "https://sfile.chatglm.cn/images-ppt/15be9a030907.jpg",
+      "caption": "",
+      "source": "Cheese Scientist",
+      "original_width": "1024px",
+      "original_height": "768px"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "success": true,
+  "query": "raw cashew nuts in bowl",
+  "count": 1,
+  "ranked": false,
+  "results": [
+    {
+      "original_url": "https://sfile.chatglm.cn/images-ppt/1cb66221e400.jpg",
+      "caption": "",
+      "source": "Nuts and Twigs",
+      "original_width": "1200px",
+      "original_height": "1800px"
+    }
+  ]
+}

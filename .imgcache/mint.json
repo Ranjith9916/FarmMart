@@ -1,0 +1,15 @@
+{
+  "success": true,
+  "query": "fresh mint leaves herb bunch",
+  "count": 1,
+  "ranked": false,
+  "results": [
+    {
+      "original_url": "https://sfile.chatglm.cn/images-ppt/4528fbf00a40.jpg",
+      "caption": "",
+      "source": "DoorDash",
+      "original_width": "1194px",
+      "original_height": "672px"
+    }
+  ]
+}

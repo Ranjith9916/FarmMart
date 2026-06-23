@@ -1,0 +1,15 @@
+{
+  "success": true,
+  "query": "fresh ripe alphonso mangoes",
+  "count": 1,
+  "ranked": false,
+  "results": [
+    {
+      "original_url": "https://sfile.chatglm.cn/images-ppt/dd259948f0cf.jpg",
+      "caption": "",
+      "source": "Reddit",
+      "original_width": "4000px",
+      "original_height": "6000px"
+    }
+  ]
+}

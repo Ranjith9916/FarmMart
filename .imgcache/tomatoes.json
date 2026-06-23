@@ -1,0 +1,15 @@
+{
+  "success": true,
+  "query": "fresh ripe red tomatoes on vine",
+  "count": 1,
+  "ranked": false,
+  "results": [
+    {
+      "original_url": "https://sfile.chatglm.cn/images-ppt/4011b141dec9.jpg",
+      "caption": "",
+      "source": "Tasting Table",
+      "original_width": "1600px",
+      "original_height": "902px"
+    }
+  ]
+}

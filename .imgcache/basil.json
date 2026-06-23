@@ -1,0 +1,15 @@
+{
+  "success": true,
+  "query": "fresh green basil herb plant",
+  "count": 1,
+  "ranked": false,
+  "results": [
+    {
+      "original_url": "https://sfile.chatglm.cn/images-ppt/64e8d023d867.jpg",
+      "caption": "",
+      "source": "Gardening Know How",
+      "original_width": "1257px",
+      "original_height": "835px"
+    }
+  ]
+}

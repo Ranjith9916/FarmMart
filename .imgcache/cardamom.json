@@ -1,0 +1,15 @@
+{
+  "success": true,
+  "query": "cardamom spice pods",
+  "count": 1,
+  "ranked": false,
+  "results": [
+    {
+      "original_url": "https://sfile.chatglm.cn/images-ppt/518fc92d3cc7.jpg",
+      "caption": "",
+      "source": "Dragon Herbarium",
+      "original_width": "994px",
+      "original_height": "1024px"
+    }
+  ]
+}
