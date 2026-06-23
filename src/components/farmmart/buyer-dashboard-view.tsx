@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useStore } from "@/lib/store";
 import { api, fmtINR, fmtDate } from "@/lib/api";
-import type { Order } from "@/lib/types";
+import type { Order, Product } from "@/lib/types";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -18,7 +18,12 @@ import {
   CloudSun,
   ChevronRight,
   Sparkles,
+  Leaf,
+  MapPin,
+  Star,
 } from "lucide-react";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 const STATUS_STYLE: Record<string, string> = {
   PENDING: "bg-amber-500/15 text-amber-700",
@@ -34,22 +39,29 @@ export function BuyerDashboard() {
   const authUser = useStore((s) => s.authUser);
   const cart = useStore((s) => s.cart);
   const setView = useStore((s) => s.setView);
+  const setActiveProduct = useStore((s) => s.setActiveProduct);
+  const addToCart = useStore((s) => s.addToCart);
   const [orders, setOrders] = useState<Order[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
     if (!userId) {
       setOrders([]);
+      setProducts([]);
       setLoading(false);
       return;
     }
     try {
-      const data = await api<{ orders: Order[] }>(
-        `/api/orders?userId=${userId}&role=BUYER`
-      );
-      setOrders(data.orders);
+      const [orderData, productData] = await Promise.all([
+        api<{ orders: Order[] }>(`/api/orders?userId=${userId}&role=BUYER`),
+        api<{ products: Product[] }>("/api/products?sort=newest&limit=8"),
+      ]);
+      setOrders(orderData.orders);
+      setProducts(productData.products);
     } catch {
       setOrders([]);
+      setProducts([]);
     } finally {
       setLoading(false);
     }
@@ -130,6 +142,21 @@ export function BuyerDashboard() {
     },
   ];
 
+  const handleAddToCart = (p: Product) => {
+    addToCart({
+      productId: p.id,
+      name: p.name,
+      price: p.price,
+      unit: p.unit,
+      quantity: 1,
+      imageUrl: p.imageUrl,
+      farmerId: p.farmerId,
+      farmerName: p.farmer.name,
+      stock: p.stock,
+    });
+    toast.success(`${p.name} added to cart`);
+  };
+
   if (loading) {
     return (
       <div className="mx-auto max-w-7xl px-4 sm:px-6 py-6 space-y-4">
@@ -202,6 +229,107 @@ export function BuyerDashboard() {
             );
           })}
         </div>
+      </div>
+
+      {/* Fresh from Farms — products listed by farmers */}
+      <div className="mt-6">
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="font-semibold flex items-center gap-2">
+            <Leaf className="size-4 text-primary" /> Fresh from Farms
+          </h2>
+          {products.length > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-1 text-primary"
+              onClick={() => setView("marketplace")}
+            >
+              View all <ChevronRight className="size-3" />
+            </Button>
+          )}
+        </div>
+        {products.length === 0 ? (
+          <Card className="grid place-items-center py-12 text-center">
+            <div className="grid size-12 place-items-center rounded-full bg-secondary">
+              <Store className="size-6 text-muted-foreground" />
+            </div>
+            <h3 className="mt-3 font-semibold">No products available yet</h3>
+            <p className="text-sm text-muted-foreground">
+              Farmers haven't listed any products. Check back soon!
+            </p>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            {products.slice(0, 8).map((p) => (
+              <Card
+                key={p.id}
+                className="group flex flex-col overflow-hidden p-0 cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5"
+                onClick={() => setActiveProduct(p.id)}
+              >
+                <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+                  <img
+                    src={p.imageUrl}
+                    alt={p.name}
+                    loading="lazy"
+                    className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).src =
+                        "data:image/svg+xml;utf8," +
+                        encodeURIComponent(
+                          `<svg xmlns='http://www.w3.org/2000/svg' width='400' height='300'><rect width='100%' height='100%' fill='%23e8efe6'/><text x='50%' y='50%' font-size='16' fill='%23708068' text-anchor='middle' dy='.35em'>${p.name}</text></svg>`
+                        );
+                    }}
+                  />
+                  <div className="absolute left-2 top-2 flex flex-col gap-1">
+                    {p.organic && (
+                      <Badge className="bg-primary text-primary-foreground gap-0.5 text-[10px]">
+                        <Leaf className="size-2.5" /> Organic
+                      </Badge>
+                    )}
+                    <Badge variant="secondary" className="w-fit text-[10px]">
+                      {p.category}
+                    </Badge>
+                  </div>
+                </div>
+                <div className="flex flex-1 flex-col gap-1.5 p-3">
+                  <div className="flex items-start justify-between gap-1">
+                    <h3 className="line-clamp-1 text-sm font-semibold leading-tight">
+                      {p.name}
+                    </h3>
+                    <div className="flex items-center gap-0.5 text-xs text-amber-600 shrink-0">
+                      <Star className="size-3 fill-amber-500 text-amber-500" />
+                      {p.rating.toFixed(1)}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                    <MapPin className="size-2.5" />
+                    {p.location}
+                  </div>
+                  <div className="mt-auto flex items-center justify-between pt-1">
+                    <div className="font-bold text-primary">
+                      {fmtINR(p.price)}
+                      <span className="text-[10px] font-normal text-muted-foreground">
+                        /{p.unit}
+                      </span>
+                    </div>
+                    <Button
+                      size="sm"
+                      className="h-7 gap-1 px-2 text-xs"
+                      disabled={p.stock <= 0}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAddToCart(p);
+                      }}
+                    >
+                      <ShoppingCart className="size-3" />
+                      Add
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Recent orders */}
