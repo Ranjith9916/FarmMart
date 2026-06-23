@@ -7,9 +7,19 @@ import {
   SEED_REVIEWS,
 } from "@/lib/seed-data";
 
-// Seed the database with demo data for FarmMart
+// Seed the database with demo data for FarmMart (idempotent — skips if already seeded)
 export async function POST() {
   try {
+    // Skip if products already exist (avoid re-seeding on every page mount)
+    const existing = await db.product.count();
+    if (existing > 0) {
+      return NextResponse.json({
+        success: true,
+        skipped: true,
+        message: "Database already seeded.",
+      });
+    }
+
     // Wipe existing data (demo only)
     await db.review.deleteMany();
     await db.priceSnapshot.deleteMany();

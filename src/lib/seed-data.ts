@@ -27,6 +27,7 @@ export interface SeedUser {
   id: string;
   email: string;
   name: string;
+  password: string;
   role: string;
   phone?: string;
   location: string;
@@ -39,6 +40,7 @@ export const SEED_USERS: SeedUser[] = [
     id: "u_buyer_demo",
     email: "buyer@farmmart.io",
     name: "Aarav Mehta",
+    password: "harvest123",
     role: "BUYER",
     phone: "+91 98200 11223",
     location: "Pune, Maharashtra",
@@ -49,6 +51,7 @@ export const SEED_USERS: SeedUser[] = [
     id: "u_farmer_ravi",
     email: "ravi@farmmart.io",
     name: "Ravi Sharma",
+    password: "farmlife123",
     role: "FARMER",
     phone: "+91 99100 44556",
     location: "Nashik, Maharashtra",
@@ -59,6 +62,7 @@ export const SEED_USERS: SeedUser[] = [
     id: "u_farmer_meena",
     email: "meena@farmmart.io",
     name: "Meena Devi",
+    password: "growmore123",
     role: "FARMER",
     phone: "+91 90040 77881",
     location: "Karnal, Haryana",
@@ -69,6 +73,7 @@ export const SEED_USERS: SeedUser[] = [
     id: "u_farmer_arjun",
     email: "arjun@farmmart.io",
     name: "Arjun Reddy",
+    password: "soilrich123",
     role: "FARMER",
     phone: "+91 98490 33221",
     location: "Hyderabad, Telangana",
@@ -79,6 +84,7 @@ export const SEED_USERS: SeedUser[] = [
     id: "u_farmer_sunita",
     email: "sunita@farmmart.io",
     name: "Sunita Patel",
+    password: "dairyfresh123",
     role: "FARMER",
     phone: "+91 97250 66112",
     location: "Anand, Gujarat",
@@ -89,6 +95,7 @@ export const SEED_USERS: SeedUser[] = [
     id: "u_farmer_jaswant",
     email: "jaswant@farmmart.io",
     name: "Jaswant Singh",
+    password: "wheatgold123",
     role: "FARMER",
     phone: "+91 98150 22091",
     location: "Ludhiana, Punjab",
@@ -99,6 +106,7 @@ export const SEED_USERS: SeedUser[] = [
     id: "u_wholesale_global",
     email: "bulk@farmmart.io",
     name: "Global Traders Co.",
+    password: "bulktrade123",
     role: "WHOLESALER",
     phone: "+91 99000 11100",
     location: "Mumbai, Maharashtra",
@@ -109,6 +117,7 @@ export const SEED_USERS: SeedUser[] = [
     id: "u_transport_fast",
     email: "fleet@farmmart.io",
     name: "FastTrack Logistics",
+    password: "logistics123",
     role: "TRANSPORTER",
     phone: "+91 98888 00012",
     location: "Nagpur, Maharashtra",

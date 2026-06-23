@@ -14,6 +14,7 @@ model User {
   id        String   @id @default(cuid())
   email     String   @unique
   name      String
+  password  String   @default("password123")
   role      String   @default("BUYER") // BUYER | FARMER | WHOLESALER | TRANSPORTER
   phone     String?
   location  String?

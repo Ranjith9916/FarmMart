@@ -5,6 +5,7 @@ import { useStore } from "@/lib/store";
 import { api } from "@/lib/api";
 import { Header } from "@/components/farmmart/header";
 import { Footer } from "@/components/farmmart/footer";
+import { LoginView } from "@/components/farmmart/login-view";
 import { MarketplaceView } from "@/components/farmmart/marketplace-view";
 import { ProductDetailDialog } from "@/components/farmmart/product-detail-dialog";
 import { CartView } from "@/components/farmmart/cart-view";
@@ -15,13 +16,19 @@ import { WeatherView } from "@/components/farmmart/weather-view";
 import { InsightsView } from "@/components/farmmart/insights-view";
 
 export default function Home() {
-  const view = useStore((s) => s.view);
+  const { authed, view } = useStore();
 
   // Ensure the database is seeded on first load (idempotent)
   useEffect(() => {
     api("/api/seed", { method: "POST" }).catch(() => {});
   }, []);
 
+  // Not authenticated — show the login / signup page (no header/footer)
+  if (!authed) {
+    return <LoginView />;
+  }
+
+  // Authenticated — show the full app shell
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
