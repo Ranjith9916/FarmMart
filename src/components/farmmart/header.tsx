@@ -35,12 +35,12 @@ import { AddProductDialog } from "./add-product-dialog";
 
 const NAV: { key: ViewKey; label: string; icon: typeof Sprout; roles: Role[] }[] = [
   { key: "dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["BUYER", "FARMER", "WHOLESALER", "TRANSPORTER"] },
-  { key: "marketplace", label: "Marketplace", icon: Store, roles: ["BUYER", "FARMER", "WHOLESALER", "TRANSPORTER"] },
-  { key: "cart", label: "Cart", icon: ShoppingCart, roles: ["BUYER", "WHOLESALER"] },
-  { key: "orders", label: "Orders", icon: Package, roles: ["BUYER", "FARMER", "WHOLESALER", "TRANSPORTER"] },
-  { key: "advisor", label: "AI Crop Advisor", icon: Bot, roles: ["BUYER", "FARMER", "WHOLESALER", "TRANSPORTER"] },
-  { key: "weather", label: "Weather", icon: CloudSun, roles: ["BUYER", "FARMER", "WHOLESALER", "TRANSPORTER"] },
-  { key: "insights", label: "Market Insights", icon: TrendingUp, roles: ["BUYER", "FARMER", "WHOLESALER", "TRANSPORTER"] },
+  { key: "marketplace", label: "Marketplace", icon: Store, roles: ["FARMER", "WHOLESALER", "TRANSPORTER"] },
+  { key: "cart", label: "Cart", icon: ShoppingCart, roles: ["WHOLESALER"] },
+  { key: "orders", label: "Orders", icon: Package, roles: ["FARMER", "WHOLESALER", "TRANSPORTER"] },
+  { key: "advisor", label: "AI Crop Advisor", icon: Bot, roles: ["FARMER", "WHOLESALER", "TRANSPORTER"] },
+  { key: "weather", label: "Weather", icon: CloudSun, roles: ["FARMER", "WHOLESALER", "TRANSPORTER"] },
+  { key: "insights", label: "Market Insights", icon: TrendingUp, roles: ["FARMER", "WHOLESALER", "TRANSPORTER"] },
 ];
 
 export function Header() {
