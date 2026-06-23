@@ -26,6 +26,7 @@ import {
   Leaf,
   ChevronDown,
   PlusCircle,
+  LogOut,
   UserCircle2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -43,13 +44,19 @@ const NAV: { key: ViewKey; label: string; icon: typeof Sprout; roles: Role[] }[]
 ];
 
 export function Header() {
-  const { view, setView, role, setRole, cart } = useStore();
+  const { view, setView, role, setRole, cart, authUser, logout } = useStore();
   const itemCount = cart.reduce((s, c) => s + c.quantity, 0);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [sellOpen, setSellOpen] = useState(false);
 
   const visibleNav = NAV.filter((n) => n.roles.includes(role));
   const canSell = role === "FARMER" || role === "WHOLESALER";
+  const initials = (authUser?.name || "U")
+    .split(" ")
+    .map((p) => p[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/85 backdrop-blur supports-[backdrop-filter]:bg-background/70">
@@ -112,20 +119,38 @@ export function Header() {
             </Button>
           )}
 
-          {/* Role switcher */}
+          {/* Account / role menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-1.5">
-                <UserCircle2 className="size-4 text-primary" />
-                <span className="hidden sm:inline">{ROLE_LABELS[role]}</span>
+              <Button variant="outline" size="sm" className="gap-1.5 pr-1.5">
+                <div className="grid size-6 place-items-center rounded-full bg-primary text-[11px] font-bold text-primary-foreground">
+                  {initials}
+                </div>
+                <span className="hidden sm:inline max-w-[120px] truncate">
+                  {authUser?.name?.split(" ")[0] || ROLE_LABELS[role]}
+                </span>
                 <ChevronDown className="size-3.5 opacity-60" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuContent align="end" className="w-60">
+              {/* Account header */}
+              <DropdownMenuLabel className="flex items-center gap-2 py-2">
+                <div className="grid size-8 place-items-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+                  {initials}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-sm font-semibold">
+                    {authUser?.name || "Guest"}
+                  </div>
+                  <div className="truncate text-[11px] font-normal text-muted-foreground">
+                    {authUser?.email}
+                  </div>
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
               <DropdownMenuLabel className="text-xs text-muted-foreground">
                 Switch perspective
               </DropdownMenuLabel>
-              <DropdownMenuSeparator />
               {(Object.keys(ROLE_LABELS) as Role[]).map((r) => (
                 <DropdownMenuItem
                   key={r}
@@ -139,9 +164,21 @@ export function Header() {
                     <Leaf className="size-3.5 text-primary" />
                     {ROLE_LABELS[r]}
                   </span>
-                  {role === r && <Badge variant="secondary" className="text-[10px]">Active</Badge>}
+                  {role === r && (
+                    <Badge variant="secondary" className="text-[10px]">
+                      Active
+                    </Badge>
+                  )}
                 </DropdownMenuItem>
               ))}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={logout}
+                className="flex items-center gap-2 text-destructive focus:text-destructive"
+              >
+                <LogOut className="size-4" />
+                Sign out
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 
@@ -199,6 +236,16 @@ export function Header() {
                 Sell / List a Product
               </button>
             )}
+            <button
+              onClick={() => {
+                setMobileOpen(false);
+                logout();
+              }}
+              className="col-span-2 flex items-center justify-center gap-2 rounded-lg border border-border/60 px-3 py-2.5 text-sm font-medium text-destructive"
+            >
+              <LogOut className="size-4" />
+              Sign out
+            </button>
           </nav>
         </div>
       )}
@@ -210,7 +257,6 @@ export function Header() {
           onOpenChange={setSellOpen}
           role={role}
           onSaved={() => {
-            // After publishing, jump to the dashboard so the farmer sees their new listing
             setView("dashboard");
           }}
         />

@@ -2,7 +2,21 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { CartItem, Role, ViewKey } from "./types";
 
+export interface AuthUser {
+  id: string;
+  name: string;
+  email: string;
+  role: Role;
+  location?: string | null;
+}
+
 interface FarmMartState {
+  // Auth
+  authed: boolean;
+  authUser: AuthUser | null;
+  login: (user: AuthUser) => void;
+  logout: () => void;
+
   // UI
   view: ViewKey;
   setView: (v: ViewKey) => void;
@@ -34,11 +48,29 @@ interface FarmMartState {
 export const useStore = create<FarmMartState>()(
   persist(
     (set) => ({
+      authed: false,
+      authUser: null,
+      login: (user) =>
+        set({ authed: true, authUser: user, role: user.role, view: "marketplace" }),
+      logout: () =>
+        set({
+          authed: false,
+          authUser: null,
+          view: "marketplace",
+          cart: [],
+          activeProductId: null,
+        }),
+
       view: "marketplace",
       setView: (v) => set({ view: v }),
 
       role: "BUYER",
-      setRole: (r) => set({ role: r }),
+      setRole: (r) =>
+        set((state) => ({
+          role: r,
+          // keep authUser role in sync when an authed user switches perspective
+          authUser: state.authUser ? { ...state.authUser, role: r } : null,
+        })),
 
       cartOpen: false,
       setCartOpen: (b) => set({ cartOpen: b }),
@@ -80,6 +112,8 @@ export const useStore = create<FarmMartState>()(
     {
       name: "farmmart-store",
       partialize: (state) => ({
+        authed: state.authed,
+        authUser: state.authUser,
         role: state.role,
         cart: state.cart,
       }),
