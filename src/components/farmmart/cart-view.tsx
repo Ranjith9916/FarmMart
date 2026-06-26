@@ -34,6 +34,7 @@ import {
   Clock,
   ArrowLeft,
   Check,
+  Sprout,
 } from "lucide-react";
 import { toast } from "sonner";
 import type { Order } from "@/lib/types";
@@ -89,7 +90,7 @@ const EMI_PLANS = [
   { id: "12m", label: "12 Months", rate: 14, desc: "14% interest" },
 ];
 
-type CheckoutStep = "details" | "upi_apps" | "upi_pay" | "processing" | "done";
+type CheckoutStep = "details" | "upi_apps" | "upi_pay" | "upi_app_open" | "processing" | "done";
 
 export function CartView() {
   const { cart, updateQuantity, removeFromCart, clearCart, setView, authUser } = useStore();
@@ -171,8 +172,8 @@ export function CartView() {
       toast.error("Enter a 4-digit UPI PIN");
       return;
     }
-    const appName = UPI_APPS.find((a) => a.id === selectedUpiApp)?.name || selectedUpiApp;
-    placeOrder(`UPI - ${appName}`);
+    // Redirect to the simulated UPI app — order is placed from inside the app
+    setStep("upi_app_open");
   };
 
   const handleUPIIdPay = () => {
@@ -184,7 +185,17 @@ export function CartView() {
       toast.error("Enter a 4-digit UPI PIN");
       return;
     }
-    placeOrder(`UPI - ${upiId.trim()}`);
+    // Redirect to the simulated UPI app — order is placed from inside the app
+    setStep("upi_app_open");
+  };
+
+  // Called from inside the simulated UPI app — this is where the order is actually placed
+  const confirmUPIPayment = () => {
+    const isUpiId = selectedUpiApp === "UPI_ID";
+    const appName = isUpiId
+      ? upiId.trim()
+      : UPI_APPS.find((a) => a.id === selectedUpiApp)?.name || selectedUpiApp;
+    placeOrder(`UPI - ${appName}`);
   };
 
   if (cart.length === 0 && !placed) {
@@ -695,6 +706,144 @@ export function CartView() {
                       By proceeding, you authorize FarmMart to debit{" "}
                       {fmtINR(totals.total)} from your account via {displayName}.
                     </p>
+                  </div>
+                );
+              })()}
+            </>
+          ) : step === "upi_app_open" ? (
+            /* Step: Simulated UPI App Interface */
+            <>
+              <DialogHeader className="sr-only">
+                <DialogTitle>UPI App</DialogTitle>
+              </DialogHeader>
+              {(() => {
+                const app =
+                  UPI_APPS.find((a) => a.id === selectedUpiApp) ||
+                  UPI_APPS.find((a) => a.id === "OtherUPI")!;
+                const isUpiId = selectedUpiApp === "UPI_ID";
+                const appName = isUpiId ? "UPI" : app.name;
+
+                return (
+                  <div className="space-y-0 -mx-6 -my-6 overflow-hidden rounded-lg">
+                    {/* App top bar */}
+                    <div
+                      className={cn(
+                        "flex items-center justify-between px-4 py-3 text-white",
+                        isUpiId ? "bg-gray-800" : app.color
+                      )}
+                    >
+                      <button
+                        onClick={() => setStep("upi_pay")}
+                        className="flex items-center gap-1 text-sm font-medium text-white/90 hover:text-white"
+                      >
+                        <ArrowLeft className="size-4" /> Back
+                      </button>
+                      <span className="text-sm font-bold">{appName}</span>
+                      <span className="size-4" />
+                    </div>
+
+                    {/* App content */}
+                    <div className="bg-background p-6 space-y-5">
+                      {/* App logo + name */}
+                      <div className="flex flex-col items-center gap-2 pt-2">
+                        <div
+                          className={cn(
+                            "grid size-16 place-items-center rounded-2xl text-2xl font-bold text-white shadow-lg",
+                            isUpiId ? "bg-gray-800" : app.color
+                          )}
+                        >
+                          {isUpiId ? "↑" : app.initials}
+                        </div>
+                        <div className="text-lg font-bold">{appName}</div>
+                        <div className="text-xs text-muted-foreground">
+                          Opening {appName}…
+                        </div>
+                      </div>
+
+                      {/* Payment request card */}
+                      <div className="rounded-xl border border-border/60 p-4 space-y-3">
+                        <div className="flex items-center gap-3">
+                          <div className="grid size-10 place-items-center rounded-lg bg-primary/10 text-primary">
+                            <Sprout className="size-5" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm font-semibold">FarmMart</div>
+                            <div className="text-xs text-muted-foreground">
+                              farmmart@hdfcbank
+                            </div>
+                          </div>
+                          <Badge variant="secondary" className="text-[10px]">
+                            Verified
+                          </Badge>
+                        </div>
+
+                        <Separator />
+
+                        <div className="space-y-1.5 text-sm">
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Amount</span>
+                            <span className="font-bold text-base">
+                              {fmtINR(totals.total)}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Items</span>
+                            <span>{totals.itemCount}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">
+                              From account
+                            </span>
+                            <span className="font-medium">
+                              {isUpiId ? upiId.trim() : "yourname@okhdfcbank"}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Note</span>
+                            <span className="text-xs">FarmMart order</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Balance info */}
+                      <div className="flex items-center justify-between rounded-lg bg-secondary/50 px-3 py-2 text-xs">
+                        <span className="text-muted-foreground">
+                          Available balance
+                        </span>
+                        <span className="font-semibold">
+                          {fmtINR(totals.total + 15450)}
+                        </span>
+                      </div>
+
+                      {/* Pay button — order is placed here */}
+                      <Button
+                        className="w-full gap-2"
+                        size="lg"
+                        onClick={confirmUPIPayment}
+                        disabled={placing}
+                      >
+                        {placing ? (
+                          <Loader2 className="size-4 animate-spin" />
+                        ) : (
+                          <Check className="size-4" />
+                        )}
+                        Pay {fmtINR(totals.total)}
+                      </Button>
+
+                      <button
+                        onClick={() => setStep("upi_pay")}
+                        disabled={placing}
+                        className="w-full text-center text-sm font-medium text-muted-foreground hover:text-foreground"
+                      >
+                        Cancel payment
+                      </button>
+
+                      {/* Security footer */}
+                      <div className="flex items-center justify-center gap-1.5 pt-1 text-[11px] text-muted-foreground">
+                        <ShieldCheck className="size-3 text-primary" />
+                        256-bit encrypted · Approved by NPCI
+                      </div>
+                    </div>
                   </div>
                 );
               })()}
