@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import { useStore } from "@/lib/store";
 import type { WeatherData } from "@/lib/types";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,7 @@ import {
   AlertTriangle,
   CheckCircle2,
   Layers,
+  UserCircle2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -58,6 +60,7 @@ interface CategoryAdvisory {
 }
 interface CategoryData {
   location: string;
+  role: string;
   metrics: {
     avgTemp: number;
     avgHumidity: number;
@@ -77,6 +80,7 @@ const STATUS_DOT: Record<string, string> = {
 };
 
 export function WeatherView() {
+  const role = useStore((s) => s.role);
   const [location, setLocation] = useState("Nashik, Maharashtra");
   const [data, setData] = useState<WeatherData | null>(null);
   const [catData, setCatData] = useState<CategoryData | null>(null);
@@ -98,19 +102,22 @@ export function WeatherView() {
     }
   };
 
-  const loadCategory = async (loc: string) => {
-    setCatLoading(true);
-    try {
-      const d = await api<CategoryData>(
-        `/api/ai/weather/category?location=${encodeURIComponent(loc)}`
-      );
-      setCatData(d);
-    } catch {
-      setCatData(null);
-    } finally {
-      setCatLoading(false);
-    }
-  };
+  const loadCategory = useCallback(
+    async (loc: string) => {
+      setCatLoading(true);
+      try {
+        const d = await api<CategoryData>(
+          `/api/ai/weather/category?location=${encodeURIComponent(loc)}&role=${role}`
+        );
+        setCatData(d);
+      } catch {
+        setCatData(null);
+      } finally {
+        setCatLoading(false);
+      }
+    },
+    [role]
+  );
 
   useEffect(() => {
     const t = setTimeout(() => {
@@ -118,7 +125,7 @@ export function WeatherView() {
       loadCategory(location);
     }, 200);
     return () => clearTimeout(t);
-  }, [location]);
+  }, [location, role, loadCategory]);
 
   const refresh = () => {
     loadWeather(location);
@@ -276,13 +283,20 @@ export function WeatherView() {
 
           {/* Category Weather Dashboard */}
           <div>
-            <div className="mb-3 flex items-center gap-2">
+            <div className="mb-3 flex flex-wrap items-center gap-2">
               <Layers className="size-5 text-primary" />
               <h2 className="text-xl font-bold">Category Weather Dashboard</h2>
+              {catData?.role && (
+                <Badge className="gap-1 bg-primary/15 text-primary capitalize">
+                  <UserCircle2 className="size-3" />
+                  {catData.role.toLowerCase()} advisory
+                </Badge>
+              )}
             </div>
             <p className="mb-4 text-sm text-muted-foreground">
               Weather impact and advisories tailored to each crop category for{" "}
-              <span className="font-medium text-foreground">{location}</span>.
+              <span className="font-medium text-foreground">{location}</span>, from a{" "}
+              <span className="font-medium text-primary capitalize">{role.toLowerCase()}</span> perspective.
             </p>
 
             {catLoading ? (
