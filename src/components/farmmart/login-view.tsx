@@ -55,10 +55,24 @@ export function LoginView() {
 
   // Google login state
   const [googleOpen, setGoogleOpen] = useState(false);
-  const [googleStep, setGoogleStep] = useState<"choose" | "loading">("choose");
+  const [googleStep, setGoogleStep] = useState<"accounts" | "enter" | "loading">("accounts");
   const [googleEmail, setGoogleEmail] = useState("");
   const [googleName, setGoogleName] = useState("");
   const [googleError, setGoogleError] = useState("");
+  const [savedAccounts, setSavedAccounts] = useState<{ email: string; name: string }[]>([]);
+
+  // Load saved Google accounts from localStorage on mount and when dialog opens
+  useEffect(() => {
+    if (!googleOpen) return;
+    try {
+      const stored = localStorage.getItem("farmmart-google-accounts");
+      if (stored) {
+        setSavedAccounts(JSON.parse(stored));
+      }
+    } catch {
+      // ignore
+    }
+  }, [googleOpen]);
 
   // Form state
   const [email, setEmail] = useState("");
@@ -139,12 +153,33 @@ export function LoginView() {
   const socialLogin = (provider: string) => {
     if (provider === "Google") {
       setGoogleOpen(true);
-      setGoogleStep("choose");
+      setGoogleStep("accounts");
       setGoogleEmail("");
       setGoogleName("");
       setGoogleError("");
     } else {
       toast.info(`${provider} login is not available in this demo. Please use email or Google sign-in.`);
+    }
+  };
+
+  // Save a Google account to localStorage so it shows in the picker next time
+  const saveGoogleAccount = (email: string, name: string) => {
+    try {
+      const stored = localStorage.getItem("farmmart-google-accounts");
+      const accounts: { email: string; name: string }[] = stored
+        ? JSON.parse(stored)
+        : [];
+      // Don't duplicate
+      if (!accounts.find((a) => a.email === email)) {
+        accounts.push({ email, name });
+        localStorage.setItem(
+          "farmmart-google-accounts",
+          JSON.stringify(accounts)
+        );
+        setSavedAccounts(accounts);
+      }
+    } catch {
+      // ignore
     }
   };
 
@@ -169,11 +204,13 @@ export function LoginView() {
           avatar: null,
         }),
       });
+      // Save this account so it appears in the picker next time
+      saveGoogleAccount(finalEmail, data.user.name);
       login(data.user);
       toast.success(`Signed in with Google as ${data.user.name.split(" ")[0]}!`);
       setGoogleOpen(false);
     } catch (e) {
-      setGoogleStep("choose");
+      setGoogleStep("enter");
       setGoogleError(e instanceof Error ? e.message : "Google sign-in failed");
     }
   };
@@ -570,14 +607,14 @@ export function LoginView() {
         onOpenChange={(o) => {
           setGoogleOpen(o);
           if (!o) {
-            setGoogleStep("choose");
+            setGoogleStep("accounts");
             setGoogleError("");
           }
         }}
       >
         <DialogContent className="max-w-sm p-0 overflow-hidden" aria-describedby={undefined}>
           {googleStep === "loading" ? (
-            // Loading screen — mimics Google's "Signing in..." screen
+            // Step 3: Loading screen — Google's "Signing in..." screen
             <div className="flex flex-col items-center justify-center py-16 px-6">
               <DialogHeader className="sr-only">
                 <DialogTitle>Signing in with Google</DialogTitle>
@@ -593,12 +630,86 @@ export function LoginView() {
                 Please wait while we verify your account
               </p>
             </div>
+          ) : googleStep === "accounts" && savedAccounts.length > 0 ? (
+            // Step 1: Choose an account — shows saved accounts like Chrome's account picker
+            <div className="flex flex-col">
+              <DialogHeader className="sr-only">
+                <DialogTitle>Choose an account</DialogTitle>
+                <DialogDescription>
+                  to continue to FarmMart
+                </DialogDescription>
+              </DialogHeader>
+
+              {/* Google-style header */}
+              <div className="flex flex-col items-center px-6 pt-8 pb-2">
+                <GoogleLogo />
+                <h2 className="mt-4 text-xl font-normal text-gray-800">
+                  Choose an account
+                </h2>
+                <p className="mt-1 text-sm text-gray-500">
+                  to continue to FarmMart
+                </p>
+              </div>
+
+              {/* Saved account list */}
+              <div className="px-2 py-3 space-y-1">
+                {savedAccounts.map((acc) => (
+                  <button
+                    key={acc.email}
+                    onClick={() => handleGoogleLogin(acc.email, acc.name)}
+                    className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors hover:bg-gray-50"
+                  >
+                    {/* Account avatar */}
+                    <div className="grid size-10 shrink-0 place-items-center rounded-full bg-gradient-to-br from-blue-500 to-purple-500 text-sm font-bold text-white">
+                      {acc.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-sm font-medium text-gray-800">
+                        {acc.name}
+                      </div>
+                      <div className="truncate text-xs text-gray-500">
+                        {acc.email}
+                      </div>
+                    </div>
+                  </button>
+                ))}
+
+                {/* Use another account */}
+                <button
+                  onClick={() => {
+                    setGoogleStep("enter");
+                    setGoogleEmail("");
+                    setGoogleError("");
+                  }}
+                  className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors hover:bg-gray-50"
+                >
+                  <div className="grid size-10 shrink-0 place-items-center rounded-full border-2 border-gray-300">
+                    <UserIcon className="size-5 text-gray-500" />
+                  </div>
+                  <div className="text-sm font-medium text-gray-700">
+                    Use another account
+                  </div>
+                </button>
+              </div>
+
+              {/* Footer */}
+              <div className="flex items-center justify-between border-t border-gray-100 px-6 py-3 text-xs text-gray-500">
+                <select className="bg-transparent text-gray-500 outline-none">
+                  <option>English (United States)</option>
+                </select>
+                <div className="flex gap-4">
+                  <span className="cursor-pointer hover:text-gray-700">Help</span>
+                  <span className="cursor-pointer hover:text-gray-700">Privacy</span>
+                  <span className="cursor-pointer hover:text-gray-700">Terms</span>
+                </div>
+              </div>
+            </div>
           ) : (
-            // Account chooser — mimics Google's "Choose an account" screen
+            // Step 2: Enter email — for new accounts or "Use another account"
             <div className="flex flex-col">
               <DialogHeader className="sr-only">
                 <DialogTitle>Sign in with Google</DialogTitle>
-                <DialogDescription>Choose an account to continue to FarmMart</DialogDescription>
+                <DialogDescription>Enter your email to continue to FarmMart</DialogDescription>
               </DialogHeader>
 
               {/* Google-style header */}
@@ -636,30 +747,38 @@ export function LoginView() {
                   </p>
                 </div>
 
-                {/* Continue button */}
-                <Button
-                  onClick={() => handleGoogleLogin()}
-                  disabled={!googleEmail.trim()}
-                  className="w-full h-11 rounded-full bg-blue-600 text-sm font-medium hover:bg-blue-700"
-                >
-                  Next
-                </Button>
+                {/* Back button (if accounts exist) */}
+                {savedAccounts.length > 0 && (
+                  <button
+                    onClick={() => setGoogleStep("accounts")}
+                    className="inline-flex items-center gap-1 text-sm font-medium text-gray-600 hover:text-gray-800"
+                  >
+                    <ArrowLeft className="size-3.5" /> Back
+                  </button>
+                )}
 
-                {/* Create account link */}
-                <button
-                  onClick={() => {
-                    // Auto-fill with a demo Google account
-                    const demoName = googleEmail.trim().split("@")[0] || "New User";
-                    setGoogleName(demoName.charAt(0).toUpperCase() + demoName.slice(1));
-                    handleGoogleLogin(googleEmail.trim() || "newuser@gmail.com", demoName);
-                  }}
-                  className="text-sm font-medium text-blue-600 hover:underline"
-                >
-                  Create account
-                </button>
+                {/* Continue button */}
+                <div className="flex items-center justify-between pt-2">
+                  <button
+                    onClick={() => {
+                      const demoName = googleEmail.trim().split("@")[0] || "New User";
+                      handleGoogleLogin(googleEmail.trim() || "newuser@gmail.com", demoName);
+                    }}
+                    className="text-sm font-medium text-blue-600 hover:underline"
+                  >
+                    Create account
+                  </button>
+                  <Button
+                    onClick={() => handleGoogleLogin()}
+                    disabled={!googleEmail.trim()}
+                    className="h-10 rounded-full bg-blue-600 px-6 text-sm font-medium hover:bg-blue-700"
+                  >
+                    Next
+                  </Button>
+                </div>
               </div>
 
-              {/* Footer — Google style privacy/terms */}
+              {/* Footer */}
               <div className="flex items-center justify-between border-t border-gray-100 px-6 py-3 text-xs text-gray-500">
                 <select className="bg-transparent text-gray-500 outline-none">
                   <option>English (United States)</option>
