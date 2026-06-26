@@ -23,9 +23,6 @@ import {
   MapPin,
   Phone,
   Loader2,
-  TrendingUp,
-  Truck,
-  Bot,
   ShieldCheck,
   Eye,
   EyeOff,
@@ -103,112 +100,68 @@ export function LoginView() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col md:flex-row">
-      {/* Left — animated 3D farm scene */}
-      <div className="relative hidden md:flex md:w-1/2 lg:w-3/5 flex-col justify-between overflow-hidden bg-gradient-to-b from-sky-300 via-amber-100 to-green-600 p-10 text-white lg:p-14">
-        {/* === SKY GRADIENT === */}
-        <div className="absolute inset-0 bg-gradient-to-b from-orange-200 via-sky-300 to-sky-200" aria-hidden />
+    <div className="relative min-h-screen w-full overflow-hidden">
+      {/* === FULL-SCREEN ANIMATED FARM SCENE === */}
+      <div className="absolute inset-0" aria-hidden>
+        {/* SKY GRADIENT */}
+        <div className="absolute inset-0 bg-gradient-to-b from-orange-200 via-sky-300 to-sky-200" />
 
-        {/* === RISING SUN === */}
-        <div className="absolute left-1/2 top-[18%] -translate-x-1/2" aria-hidden>
-          {/* Sun glow */}
+        {/* RISING SUN */}
+        <div className="absolute left-1/2 top-[15%] -translate-x-1/2">
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-            <div className="size-72 rounded-full bg-amber-300/40 blur-3xl animate-pulse" />
+            <div className="size-96 rounded-full bg-amber-300/40 blur-3xl animate-pulse" />
           </div>
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-            <div className="size-48 rounded-full bg-amber-300/60 blur-2xl" />
+            <div className="size-56 rounded-full bg-amber-300/60 blur-2xl" />
           </div>
-          {/* Sun disc */}
           <div
-            className="relative size-32 rounded-full bg-gradient-to-b from-amber-300 to-orange-400 shadow-[0_0_80px_40px_rgba(251,191,36,0.4)]"
+            className="relative size-40 rounded-full bg-gradient-to-b from-amber-300 to-orange-400 shadow-[0_0_100px_50px_rgba(251,191,36,0.4)]"
             style={{ animation: "sunRise 8s ease-in-out infinite alternate" }}
           />
         </div>
 
-        {/* === CLOUDS === */}
-        <div className="absolute inset-0 overflow-hidden" aria-hidden>
-          <div
-            className="absolute left-[5%] top-[12%] opacity-80"
-            style={{ animation: "cloudDrift 40s linear infinite" }}
-          >
+        {/* CLOUDS */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute left-[5%] top-[10%] opacity-80" style={{ animation: "cloudDrift 40s linear infinite" }}>
             <Cloud />
           </div>
-          <div
-            className="absolute right-[8%] top-[8%] opacity-70"
-            style={{ animation: "cloudDrift 55s linear infinite", animationDelay: "-10s" }}
-          >
+          <div className="absolute right-[8%] top-[6%] opacity-70" style={{ animation: "cloudDrift 55s linear infinite", animationDelay: "-10s" }}>
             <Cloud size={0.7} />
           </div>
-          <div
-            className="absolute left-[40%] top-[20%] opacity-60"
-            style={{ animation: "cloudDrift 60s linear infinite", animationDelay: "-25s" }}
-          >
+          <div className="absolute left-[40%] top-[18%] opacity-60" style={{ animation: "cloudDrift 60s linear infinite", animationDelay: "-25s" }}>
             <Cloud size={0.6} />
           </div>
         </div>
 
-        {/* === FLYING BIRDS === */}
-        <div className="absolute inset-0 overflow-hidden" aria-hidden>
-          {/* Bird flock 1 */}
-          <div
-            className="absolute left-0 top-[25%]"
-            style={{ animation: "birdFly1 25s linear infinite" }}
-          >
+        {/* FLYING BIRDS */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute left-0 top-[28%]" style={{ animation: "birdFly1 25s linear infinite" }}>
             <Bird />
           </div>
-          <div
-            className="absolute left-0 top-[22%]"
-            style={{ animation: "birdFly1 28s linear infinite", animationDelay: "-3s" }}
-          >
+          <div className="absolute left-0 top-[25%]" style={{ animation: "birdFly1 28s linear infinite", animationDelay: "-3s" }}>
             <Bird size={0.7} delay={0.3} />
           </div>
-          <div
-            className="absolute left-0 top-[28%]"
-            style={{ animation: "birdFly1 30s linear infinite", animationDelay: "-6s" }}
-          >
+          <div className="absolute left-0 top-[31%]" style={{ animation: "birdFly1 30s linear infinite", animationDelay: "-6s" }}>
             <Bird size={0.6} delay={0.6} />
           </div>
-          {/* Bird flock 2 (higher, smaller) */}
-          <div
-            className="absolute left-0 top-[15%]"
-            style={{ animation: "birdFly2 35s linear infinite", animationDelay: "-8s" }}
-          >
+          <div className="absolute left-0 top-[16%]" style={{ animation: "birdFly2 35s linear infinite", animationDelay: "-8s" }}>
             <Bird size={0.5} delay={0.2} />
           </div>
-          <div
-            className="absolute left-0 top-[18%]"
-            style={{ animation: "birdFly2 40s linear infinite", animationDelay: "-15s" }}
-          >
+          <div className="absolute left-0 top-[19%]" style={{ animation: "birdFly2 40s linear infinite", animationDelay: "-15s" }}>
             <Bird size={0.45} delay={0.5} />
           </div>
-          <div
-            className="absolute left-0 top-[13%]"
-            style={{ animation: "birdFly2 38s linear infinite", animationDelay: "-22s" }}
-          >
+          <div className="absolute left-0 top-[14%]" style={{ animation: "birdFly2 38s linear infinite", animationDelay: "-22s" }}>
             <Bird size={0.4} delay={0.8} />
           </div>
         </div>
 
-        {/* === MOUNTAINS (back layer — distant, hazy) === */}
-        <svg
-          className="absolute bottom-[28%] left-0 w-full"
-          viewBox="0 0 1200 200"
-          preserveAspectRatio="none"
-          aria-hidden
-        >
-          <path
-            d="M0,200 L0,120 L100,60 L200,100 L320,40 L450,90 L580,30 L720,80 L850,50 L1000,90 L1100,40 L1200,80 L1200,200 Z"
-            fill="rgba(120,130,160,0.4)"
-          />
+        {/* MOUNTAINS — back layer */}
+        <svg className="absolute bottom-[30%] left-0 w-full" viewBox="0 0 1200 200" preserveAspectRatio="none">
+          <path d="M0,200 L0,120 L100,60 L200,100 L320,40 L450,90 L580,30 L720,80 L850,50 L1000,90 L1100,40 L1200,80 L1200,200 Z" fill="rgba(120,130,160,0.4)" />
         </svg>
 
-        {/* === MOUNTAINS (mid layer) === */}
-        <svg
-          className="absolute bottom-[22%] left-0 w-full"
-          viewBox="0 0 1200 250"
-          preserveAspectRatio="none"
-          aria-hidden
-        >
+        {/* MOUNTAINS — mid layer */}
+        <svg className="absolute bottom-[24%] left-0 w-full" viewBox="0 0 1200 250" preserveAspectRatio="none">
           <defs>
             <linearGradient id="mountainMid" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#5b6b7a" />
@@ -216,64 +169,29 @@ export function LoginView() {
               <stop offset="100%" stopColor="#3a4a5a" />
             </linearGradient>
           </defs>
-          <path
-            d="M0,250 L0,140 L80,50 L160,110 L260,30 L380,100 L500,20 L620,90 L740,40 L880,100 L1000,50 L1120,110 L1200,60 L1200,250 Z"
-            fill="url(#mountainMid)"
-          />
-          {/* Snow caps */}
-          <path
-            d="M260,30 L230,55 L250,50 L270,60 L290,45 Z M500,20 L470,50 L490,45 L510,55 L530,40 Z M740,40 L710,65 L730,60 L750,70 L770,55 Z"
-            fill="rgba(255,255,255,0.7)"
-          />
+          <path d="M0,250 L0,140 L80,50 L160,110 L260,30 L380,100 L500,20 L620,90 L740,40 L880,100 L1000,50 L1120,110 L1200,60 L1200,250 Z" fill="url(#mountainMid)" />
+          <path d="M260,30 L230,55 L250,50 L270,60 L290,45 Z M500,20 L470,50 L490,45 L510,55 L530,40 Z M740,40 L710,65 L730,60 L750,70 L770,55 Z" fill="rgba(255,255,255,0.7)" />
         </svg>
 
-        {/* === MOUNTAINS (front layer — closer, darker) === */}
-        <svg
-          className="absolute bottom-[16%] left-0 w-full"
-          viewBox="0 0 1200 200"
-          preserveAspectRatio="none"
-          aria-hidden
-        >
+        {/* MOUNTAINS — front layer */}
+        <svg className="absolute bottom-[18%] left-0 w-full" viewBox="0 0 1200 200" preserveAspectRatio="none">
           <defs>
             <linearGradient id="mountainFront" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#3d4f5c" />
               <stop offset="100%" stopColor="#2a3a47" />
             </linearGradient>
           </defs>
-          <path
-            d="M0,200 L0,100 L120,30 L250,90 L400,10 L560,80 L700,20 L860,90 L1020,30 L1200,80 L1200,200 Z"
-            fill="url(#mountainFront)"
-          />
-          <path
-            d="M400,10 L370,40 L390,35 L410,45 L430,30 Z M700,20 L670,50 L690,45 L710,55 L730,40 Z"
-            fill="rgba(255,255,255,0.8)"
-          />
+          <path d="M0,200 L0,100 L120,30 L250,90 L400,10 L560,80 L700,20 L860,90 L1020,30 L1200,80 L1200,200 Z" fill="url(#mountainFront)" />
+          <path d="M400,10 L370,40 L390,35 L410,45 L430,30 Z M700,20 L670,50 L690,45 L710,55 L730,40 Z" fill="rgba(255,255,255,0.8)" />
         </svg>
 
-        {/* === FARMLAND — rolling green hills === */}
-        <div className="absolute bottom-0 left-0 w-full" aria-hidden>
-          {/* Back hills */}
-          <svg
-            className="absolute bottom-[8%] left-0 w-full"
-            viewBox="0 0 1200 120"
-            preserveAspectRatio="none"
-          >
-            <path
-              d="M0,120 L0,60 Q150,20 300,50 T600,40 T900,55 T1200,35 L1200,120 Z"
-              fill="#5a9e3e"
-            />
+        {/* FARMLAND — rolling hills */}
+        <div className="absolute bottom-0 left-0 w-full">
+          <svg className="absolute bottom-[10%] left-0 w-full" viewBox="0 0 1200 120" preserveAspectRatio="none">
+            <path d="M0,120 L0,60 Q150,20 300,50 T600,40 T900,55 T1200,35 L1200,120 Z" fill="#5a9e3e" />
           </svg>
-          {/* Crop rows mid */}
-          <svg
-            className="absolute bottom-[3%] left-0 w-full"
-            viewBox="0 0 1200 100"
-            preserveAspectRatio="none"
-          >
-            <path
-              d="M0,100 L0,40 Q200,10 400,35 T800,25 T1200,40 L1200,100 Z"
-              fill="#4a8e2e"
-            />
-            {/* Crop row lines */}
+          <svg className="absolute bottom-[4%] left-0 w-full" viewBox="0 0 1200 100" preserveAspectRatio="none">
+            <path d="M0,100 L0,40 Q200,10 400,35 T800,25 T1200,40 L1200,100 Z" fill="#4a8e2e" />
             <g stroke="rgba(255,255,255,0.15)" strokeWidth="2" fill="none">
               <path d="M0,55 Q300,30 600,45 T1200,50" />
               <path d="M0,65 Q300,40 600,55 T1200,60" />
@@ -281,101 +199,59 @@ export function LoginView() {
               <path d="M0,85 Q300,68 600,80 T1200,84" />
             </g>
           </svg>
-          {/* Front field */}
-          <svg
-            className="absolute bottom-0 left-0 w-full"
-            viewBox="0 0 1200 60"
-            preserveAspectRatio="none"
-          >
+          <svg className="absolute bottom-0 left-0 w-full" viewBox="0 0 1200 60" preserveAspectRatio="none">
             <defs>
               <linearGradient id="fieldFront" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#3d7e22" />
                 <stop offset="100%" stopColor="#2d6e15" />
               </linearGradient>
             </defs>
-            <path
-              d="M0,60 L0,20 Q200,5 500,15 T1000,12 T1200,20 L1200,60 Z"
-              fill="url(#fieldFront)"
-            />
-            {/* Wheat/crop tufts */}
+            <path d="M0,60 L0,20 Q200,5 500,15 T1000,12 T1200,20 L1200,60 Z" fill="url(#fieldFront)" />
             <g fill="rgba(255,220,100,0.5)">
               {Array.from({ length: 30 }).map((_, i) => (
-                <ellipse
-                  key={i}
-                  cx={i * 42 + 10}
-                  cy={18 + (i % 3) * 4}
-                  rx="3"
-                  ry="8"
-                />
+                <ellipse key={i} cx={i * 42 + 10} cy={18 + (i % 3) * 4} rx="3" ry="8" />
               ))}
             </g>
           </svg>
         </div>
 
-        {/* === Trees === */}
-        <svg
-          className="absolute bottom-[14%] left-[8%] size-16"
-          viewBox="0 0 40 60"
-          aria-hidden
-        >
+        {/* Trees */}
+        <svg className="absolute bottom-[16%] left-[6%] size-20" viewBox="0 0 40 60" aria-hidden>
           <rect x="17" y="35" width="6" height="20" fill="#5a3e2a" />
           <circle cx="20" cy="25" r="14" fill="#3d7e22" />
           <circle cx="12" cy="30" r="9" fill="#4a8e2e" />
           <circle cx="28" cy="30" r="9" fill="#4a8e2e" />
         </svg>
-        <svg
-          className="absolute bottom-[12%] right-[12%] size-20"
-          viewBox="0 0 40 60"
-          aria-hidden
-        >
+        <svg className="absolute bottom-[14%] right-[8%] size-24" viewBox="0 0 40 60" aria-hidden>
           <rect x="17" y="35" width="6" height="20" fill="#5a3e2a" />
           <circle cx="20" cy="22" r="16" fill="#3d7e22" />
           <circle cx="10" cy="30" r="10" fill="#4a8e2e" />
           <circle cx="30" cy="30" r="10" fill="#4a8e2e" />
         </svg>
+      </div>
 
-        {/* === Content overlay === */}
-        <div className="relative z-10 flex items-center gap-3">
-          <div className="grid size-11 place-items-center rounded-xl bg-white/20 backdrop-blur-md shadow-lg">
-            <Sprout className="size-6 text-white" />
+      {/* === TOP BRAND BAR === */}
+      <div className="absolute left-0 top-0 z-10 flex w-full items-center justify-between p-5 sm:p-6">
+        <div className="flex items-center gap-2.5">
+          <div className="grid size-10 place-items-center rounded-xl bg-white/25 backdrop-blur-md shadow-lg">
+            <Sprout className="size-5 text-white" />
           </div>
           <div>
-            <div className="text-2xl font-bold tracking-tight drop-shadow-md">FarmMart</div>
-            <div className="text-xs text-white/90 drop-shadow">
-              AI-Powered Agriculture Marketplace
-            </div>
+            <div className="text-lg font-bold tracking-tight text-white drop-shadow-md">FarmMart</div>
+            <div className="text-[10px] text-white/80 drop-shadow">AI Agriculture Marketplace</div>
           </div>
         </div>
-
-        <div className="relative z-10 max-w-lg">
-          <h1 className="text-3xl font-bold leading-tight drop-shadow-md lg:text-4xl">
-            From harvest to doorstep, powered by AI.
-          </h1>
-          <p className="mt-3 text-base text-white/90 drop-shadow lg:text-lg">
-            Connect with verified farmers, buyers, wholesalers, and transporters
-            across India. Discover fresh produce, get AI crop advice, weather
-            forecasts, and real-time market intelligence.
-          </p>
-
-          <div className="mt-6 grid grid-cols-2 gap-3">
-            <Feature icon={TrendingUp} label="Market intelligence" />
-            <Feature icon={Bot} label="AI crop advisor" />
-            <Feature icon={Truck} label="Pan-India logistics" />
-            <Feature icon={ShieldCheck} label="Secure payments" />
-          </div>
-        </div>
-
-        <div className="relative z-10 flex items-center gap-2 text-sm text-white/80 drop-shadow">
-          <Leaf className="size-4" />
-          <span>Trusted by 10,000+ farmers across 12 states</span>
+        <div className="hidden items-center gap-2 rounded-full bg-white/15 px-3 py-1.5 text-xs font-medium text-white backdrop-blur-md sm:flex">
+          <Leaf className="size-3.5" />
+          Trusted by 10,000+ farmers
         </div>
       </div>
 
-      {/* Right — auth form panel */}
-      <div className="flex flex-1 items-center justify-center bg-background p-6 sm:p-10">
-        <div className="w-full max-w-md">
+      {/* === CENTERED GLASSMORPHISM LOGIN CARD === */}
+      <div className="relative z-10 flex min-h-screen items-center justify-center p-4 sm:p-6">
+        <div className="w-full max-w-md rounded-2xl border border-white/30 bg-white/85 p-6 shadow-2xl backdrop-blur-xl sm:p-8">
           {/* Mobile logo */}
-          <div className="mb-8 flex items-center gap-2 md:hidden">
+          <div className="mb-6 flex items-center justify-center gap-2 md:hidden">
             <div className="grid size-10 place-items-center rounded-xl bg-primary text-primary-foreground">
               <Sprout className="size-5" />
             </div>
@@ -383,11 +259,11 @@ export function LoginView() {
           </div>
 
           {/* Mode toggle */}
-          <div className="mb-6 inline-flex rounded-lg border border-border bg-secondary/50 p-1">
+          <div className="mb-6 inline-flex w-full rounded-lg border border-border bg-secondary/50 p-1">
             <button
               onClick={() => setMode("login")}
               className={cn(
-                "rounded-md px-5 py-1.5 text-sm font-medium transition-colors",
+                "flex-1 rounded-md px-5 py-1.5 text-sm font-medium transition-colors",
                 mode === "login"
                   ? "bg-background text-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground"
@@ -398,7 +274,7 @@ export function LoginView() {
             <button
               onClick={() => setMode("register")}
               className={cn(
-                "rounded-md px-5 py-1.5 text-sm font-medium transition-colors",
+                "flex-1 rounded-md px-5 py-1.5 text-sm font-medium transition-colors",
                 mode === "register"
                   ? "bg-background text-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground"
@@ -560,21 +436,13 @@ export function LoginView() {
           </div>
         </div>
       </div>
-    </div>
-  );
-}
 
-function Feature({
-  icon: Icon,
-  label,
-}: {
-  icon: typeof Sprout;
-  label: string;
-}) {
-  return (
-    <div className="flex items-center gap-2 rounded-lg bg-white/10 px-3 py-2 backdrop-blur">
-      <Icon className="size-4 shrink-0" />
-      <span className="text-sm font-medium">{label}</span>
+      {/* === BOTTOM TAGLINE === */}
+      <div className="absolute bottom-0 left-0 z-10 w-full p-4 text-center">
+        <p className="text-sm font-medium text-white drop-shadow-md">
+          From harvest to doorstep, powered by AI 🌾
+        </p>
+      </div>
     </div>
   );
 }
