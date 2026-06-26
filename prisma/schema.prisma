@@ -20,6 +20,12 @@ model User {
   location  String?
   avatar    String?
   rating    Float    @default(5.0)
+  // Transporter-specific fields
+  vehicleType    String?
+  vehicleNumber  String?
+  licenseNumber  String?
+  capacity       String?
+  transportArea  String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

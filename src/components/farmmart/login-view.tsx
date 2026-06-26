@@ -39,6 +39,7 @@ import {
   Sparkles,
   ArrowLeft,
   Check,
+  Truck,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -80,6 +81,12 @@ export function LoginView() {
   const [role, setRole] = useState<Role>("BUYER");
   const [location, setLocation] = useState("");
   const [phone, setPhone] = useState("");
+  // Transporter-specific fields
+  const [vehicleType, setVehicleType] = useState("");
+  const [vehicleNumber, setVehicleNumber] = useState("");
+  const [licenseNumber, setLicenseNumber] = useState("");
+  const [capacity, setCapacity] = useState("");
+  const [transportArea, setTransportArea] = useState("");
 
   // Mouse parallax
   const mouseX = useMotionValue(0);
@@ -119,6 +126,13 @@ export function LoginView() {
         toast.error("Password must be at least 6 characters");
         return;
       }
+      // Transporter-specific validation
+      if (role === "TRANSPORTER") {
+        if (!vehicleType.trim() || !vehicleNumber.trim() || !licenseNumber.trim()) {
+          toast.error("Please fill in all vehicle and license details");
+          return;
+        }
+      }
     }
 
     setLoading(true);
@@ -134,9 +148,17 @@ export function LoginView() {
         login(data.user);
         toast.success(`Welcome back, ${data.user.name.split(" ")[0]}!`);
       } else {
+        const regBody: Record<string, unknown> = { name, email, password, role, location, phone };
+        if (role === "TRANSPORTER") {
+          regBody.vehicleType = vehicleType;
+          regBody.vehicleNumber = vehicleNumber;
+          regBody.licenseNumber = licenseNumber;
+          regBody.capacity = capacity;
+          regBody.transportArea = transportArea;
+        }
         await api("/api/auth/register", {
           method: "POST",
-          body: JSON.stringify({ name, email, password, role, location, phone }),
+          body: JSON.stringify(regBody),
         });
         toast.success("Account created successfully! Please sign in to continue.");
         setMode("login");
@@ -498,6 +520,83 @@ export function LoginView() {
                         placeholder="+91 …"
                       />
                     </div>
+
+                    {/* Transporter-specific fields */}
+                    {role === "TRANSPORTER" && (
+                      <div className="space-y-3 rounded-xl border border-primary/20 bg-primary/5 p-4">
+                        <div className="flex items-center gap-2 text-sm font-semibold text-primary">
+                          <Truck className="size-4" />
+                          Transport & Vehicle Details
+                        </div>
+
+                        {/* Vehicle type + number */}
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <Label className="mb-1 text-xs">Vehicle Type *</Label>
+                            <Select value={vehicleType} onValueChange={setVehicleType}>
+                              <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Select vehicle" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Mini Truck">Mini Truck (Tata Ace)</SelectItem>
+                                <SelectItem value="Pickup">Pickup Truck</SelectItem>
+                                <SelectItem value="Truck">Truck (6-wheeler)</SelectItem>
+                                <SelectItem value="Large Truck">Large Truck (10-wheeler)</SelectItem>
+                                <SelectItem value="Container">Container Truck</SelectItem>
+                                <SelectItem value="Refrigerated">Refrigerated Van</SelectItem>
+                                <SelectItem value="Tractor">Tractor + Trailer</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <Field
+                            id="vehicleNumber"
+                            label="Vehicle Number *"
+                            icon={Truck}
+                            value={vehicleNumber}
+                            onChange={(v) => setVehicleNumber(v.toUpperCase())}
+                            placeholder="MH-12 AB 1234"
+                          />
+                        </div>
+
+                        {/* License + capacity */}
+                        <div className="grid grid-cols-2 gap-3">
+                          <Field
+                            id="licenseNumber"
+                            label="License Number *"
+                            icon={ShieldCheck}
+                            value={licenseNumber}
+                            onChange={(v) => setLicenseNumber(v.toUpperCase())}
+                            placeholder="DL-0420190001234"
+                          />
+                          <div>
+                            <Label className="mb-1 text-xs">Capacity (tons)</Label>
+                            <Select value={capacity} onValueChange={setCapacity}>
+                              <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Select capacity" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="0.5">Up to 0.5 ton</SelectItem>
+                                <SelectItem value="1">1 ton</SelectItem>
+                                <SelectItem value="3">3 tons</SelectItem>
+                                <SelectItem value="5">5 tons</SelectItem>
+                                <SelectItem value="10">10 tons</SelectItem>
+                                <SelectItem value="15">15+ tons</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+
+                        {/* Transport area */}
+                        <Field
+                          id="transportArea"
+                          label="Service Area"
+                          icon={MapPin}
+                          value={transportArea}
+                          onChange={setTransportArea}
+                          placeholder="e.g., Maharashtra, Gujarat, Karnataka"
+                        />
+                      </div>
+                    )}
                   </>
                 )}
 

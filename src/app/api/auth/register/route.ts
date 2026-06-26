@@ -7,13 +7,30 @@ const VALID_ROLES = ["BUYER", "FARMER", "WHOLESALER", "TRANSPORTER"];
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { name, email, password, role, location, phone } = body as {
+    const {
+      name,
+      email,
+      password,
+      role,
+      location,
+      phone,
+      vehicleType,
+      vehicleNumber,
+      licenseNumber,
+      capacity,
+      transportArea,
+    } = body as {
       name: string;
       email: string;
       password: string;
       role: string;
       location?: string;
       phone?: string;
+      vehicleType?: string;
+      vehicleNumber?: string;
+      licenseNumber?: string;
+      capacity?: string;
+      transportArea?: string;
     };
 
     // Validation
@@ -33,6 +50,28 @@ export async function POST(req: NextRequest) {
       );
     }
     const finalRole = VALID_ROLES.includes(role) ? role : "BUYER";
+
+    // Transporter-specific validation
+    if (finalRole === "TRANSPORTER") {
+      if (!vehicleType?.trim()) {
+        return NextResponse.json(
+          { error: "Vehicle type is required for transporters" },
+          { status: 400 }
+        );
+      }
+      if (!vehicleNumber?.trim()) {
+        return NextResponse.json(
+          { error: "Vehicle number is required for transporters" },
+          { status: 400 }
+        );
+      }
+      if (!licenseNumber?.trim()) {
+        return NextResponse.json(
+          { error: "License number is required for transporters" },
+          { status: 400 }
+        );
+      }
+    }
 
     const normalizedEmail = email.trim().toLowerCase();
 
@@ -55,6 +94,11 @@ export async function POST(req: NextRequest) {
         role: finalRole,
         location: location?.trim() || null,
         phone: phone?.trim() || null,
+        vehicleType: vehicleType?.trim() || null,
+        vehicleNumber: vehicleNumber?.trim() || null,
+        licenseNumber: licenseNumber?.trim() || null,
+        capacity: capacity?.trim() || null,
+        transportArea: transportArea?.trim() || null,
       },
     });
 
@@ -68,6 +112,11 @@ export async function POST(req: NextRequest) {
         location: user.location,
         avatar: user.avatar,
         rating: user.rating,
+        vehicleType: user.vehicleType,
+        vehicleNumber: user.vehicleNumber,
+        licenseNumber: user.licenseNumber,
+        capacity: user.capacity,
+        transportArea: user.transportArea,
       },
     });
   } catch (e) {
