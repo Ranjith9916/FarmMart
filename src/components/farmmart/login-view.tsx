@@ -61,31 +61,15 @@ export function LoginView() {
   const [googleError, setGoogleError] = useState("");
   const [savedAccounts, setSavedAccounts] = useState<{ email: string; name: string }[]>([]);
 
-  // Simulated "Chrome logged-in accounts" — these represent Google accounts
-  // that are already signed into the Chrome browser, just like real Google OAuth
-  const CHROME_ACCOUNTS = [
-    { email: "alex.patel@gmail.com", name: "Alex Patel" },
-    { email: "priya.sharma@gmail.com", name: "Priya Sharma" },
-  ];
-
-  // Load saved Google accounts from localStorage and merge with Chrome accounts
+  // Load Google accounts from localStorage — only real accounts the user has
+  // previously logged in with (no demo/fake accounts)
   useEffect(() => {
     if (!googleOpen) return;
     try {
       const stored = localStorage.getItem("farmmart-google-accounts");
-      const userAccounts: { email: string; name: string }[] = stored
-        ? JSON.parse(stored)
-        : [];
-      // Merge Chrome accounts with user-saved accounts (no duplicates)
-      const merged = [...CHROME_ACCOUNTS];
-      for (const acc of userAccounts) {
-        if (!merged.find((m) => m.email === acc.email)) {
-          merged.push(acc);
-        }
-      }
-      setSavedAccounts(merged);
+      setSavedAccounts(stored ? JSON.parse(stored) : []);
     } catch {
-      setSavedAccounts(CHROME_ACCOUNTS);
+      setSavedAccounts([]);
     }
   }, [googleOpen]);
 
