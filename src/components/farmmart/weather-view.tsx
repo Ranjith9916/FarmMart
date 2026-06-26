@@ -24,7 +24,12 @@ import {
   RefreshCw,
   Sparkles,
   Thermometer,
+  TrendingUp,
+  AlertTriangle,
+  CheckCircle2,
+  Layers,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const LOCATIONS = [
   "Nashik, Maharashtra",
@@ -37,13 +42,49 @@ const LOCATIONS = [
   "Coimbatore, Tamil Nadu",
 ];
 
+interface CategoryMetric {
+  label: string;
+  value: string;
+  status: "good" | "watch" | "alert";
+}
+interface CategoryAdvisory {
+  category: string;
+  icon: string;
+  risk: "Low" | "Moderate" | "High";
+  riskColor: string;
+  title: string;
+  advisory: string;
+  metrics: CategoryMetric[];
+}
+interface CategoryData {
+  location: string;
+  metrics: {
+    avgTemp: number;
+    avgHumidity: number;
+    totalRain: number;
+    maxWind: number;
+    rainyDays: number;
+    hotDays: number;
+  };
+  summary: string;
+  categories: CategoryAdvisory[];
+}
+
+const STATUS_DOT: Record<string, string> = {
+  good: "bg-green-500",
+  watch: "bg-amber-500",
+  alert: "bg-destructive",
+};
+
 export function WeatherView() {
   const [location, setLocation] = useState("Nashik, Maharashtra");
   const [data, setData] = useState<WeatherData | null>(null);
+  const [catData, setCatData] = useState<CategoryData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [catLoading, setCatLoading] = useState(true);
   const [custom, setCustom] = useState("");
 
-  const load = async (loc: string) => {
+  const loadWeather = async (loc: string) => {
     setLoading(true);
     try {
       const d = await api<WeatherData>(
@@ -57,20 +98,42 @@ export function WeatherView() {
     }
   };
 
+  const loadCategory = async (loc: string) => {
+    setCatLoading(true);
+    try {
+      const d = await api<CategoryData>(
+        `/api/ai/weather/category?location=${encodeURIComponent(loc)}`
+      );
+      setCatData(d);
+    } catch {
+      setCatData(null);
+    } finally {
+      setCatLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const t = setTimeout(() => load(location), 200);
+    const t = setTimeout(() => {
+      loadWeather(location);
+      loadCategory(location);
+    }, 200);
     return () => clearTimeout(t);
   }, [location]);
 
+  const refresh = () => {
+    loadWeather(location);
+    loadCategory(location);
+  };
+
   return (
-    <div className="mx-auto max-w-5xl px-4 sm:px-6 py-6">
+    <div className="mx-auto max-w-6xl px-4 sm:px-6 py-6">
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <CloudSun className="size-7 text-primary" /> Weather &amp; Farm Advisory
           </h1>
           <p className="text-sm text-muted-foreground">
-            7-day forecast with AI-generated farming recommendations.
+            7-day forecast with category-specific crop advisories and AI recommendations.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -90,11 +153,13 @@ export function WeatherView() {
           <Button
             variant="outline"
             size="icon"
-            onClick={() => load(location)}
-            disabled={loading}
+            onClick={refresh}
+            disabled={loading || catLoading}
             aria-label="Refresh"
           >
-            <RefreshCw className={loading ? "size-4 animate-spin" : "size-4"} />
+            <RefreshCw
+              className={loading || catLoading ? "size-4 animate-spin" : "size-4"}
+            />
           </Button>
         </div>
       </div>
@@ -209,6 +274,86 @@ export function WeatherView() {
             </div>
           </Card>
 
+          {/* Category Weather Dashboard */}
+          <div>
+            <div className="mb-3 flex items-center gap-2">
+              <Layers className="size-5 text-primary" />
+              <h2 className="text-xl font-bold">Category Weather Dashboard</h2>
+            </div>
+            <p className="mb-4 text-sm text-muted-foreground">
+              Weather impact and advisories tailored to each crop category for{" "}
+              <span className="font-medium text-foreground">{location}</span>.
+            </p>
+
+            {catLoading ? (
+              <div className="grid place-items-center py-16">
+                <Loader2 className="size-8 animate-spin text-primary" />
+              </div>
+            ) : !catData ? (
+              <Card className="grid place-items-center py-12">
+                <p className="text-sm text-muted-foreground">
+                  Unable to load category advisories.
+                </p>
+              </Card>
+            ) : (
+              <div className="space-y-4">
+                {/* Summary + weekly metrics strip */}
+                <Card className="p-5 fm-field-bg">
+                  <div className="flex items-start gap-3">
+                    <div className="grid size-9 shrink-0 place-items-center rounded-lg bg-primary text-primary-foreground">
+                      <TrendingUp className="size-4" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-sm">Weekly Summary</h3>
+                      <p className="mt-1 text-sm text-foreground/90">
+                        {catData.summary}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
+                    <MetricPill
+                      icon={Thermometer}
+                      label="Avg Temp"
+                      value={`${catData.metrics.avgTemp}°C`}
+                    />
+                    <MetricPill
+                      icon={Droplets}
+                      label="Avg Humidity"
+                      value={`${catData.metrics.avgHumidity}%`}
+                    />
+                    <MetricPill
+                      icon={Umbrella}
+                      label="Total Rain"
+                      value={`${catData.metrics.totalRain}mm`}
+                    />
+                    <MetricPill
+                      icon={Wind}
+                      label="Max Wind"
+                      value={`${catData.metrics.maxWind}km/h`}
+                    />
+                    <MetricPill
+                      icon={CloudSun}
+                      label="Rainy Days"
+                      value={`${catData.metrics.rainyDays}/7`}
+                    />
+                    <MetricPill
+                      icon={AlertTriangle}
+                      label="Hot Days"
+                      value={`${catData.metrics.hotDays}/7`}
+                    />
+                  </div>
+                </Card>
+
+                {/* Category cards grid */}
+                <div className="grid gap-4 md:grid-cols-2">
+                  {catData.categories.map((cat) => (
+                    <CategoryCard key={cat.category} cat={cat} />
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Custom location lookup */}
           <Card className="p-4">
             <h3 className="mb-2 text-sm font-semibold">Check another location</h3>
@@ -229,5 +374,69 @@ export function WeatherView() {
         </div>
       )}
     </div>
+  );
+}
+
+function MetricPill({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: typeof CloudSun;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="flex items-center gap-2 rounded-lg bg-background/60 p-2.5 backdrop-blur">
+      <div className="grid size-7 place-items-center rounded-md bg-primary/10 text-primary">
+        <Icon className="size-3.5" />
+      </div>
+      <div>
+        <div className="text-[10px] font-medium text-muted-foreground">{label}</div>
+        <div className="text-sm font-bold">{value}</div>
+      </div>
+    </div>
+  );
+}
+
+function CategoryCard({ cat }: { cat: CategoryAdvisory }) {
+  return (
+    <Card className="overflow-hidden p-0">
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-border/60 bg-secondary/40 p-4">
+        <div className="flex items-center gap-3">
+          <span className="text-3xl">{cat.icon}</span>
+          <div>
+            <h3 className="font-bold">{cat.category}</h3>
+            <p className="text-xs text-muted-foreground">{cat.title}</p>
+          </div>
+        </div>
+        <Badge className={cn("gap-1 text-xs", cat.riskColor)}>
+          {cat.risk === "High" && <AlertTriangle className="size-3" />}
+          {cat.risk === "Low" && <CheckCircle2 className="size-3" />}
+          {cat.risk} Risk
+        </Badge>
+      </div>
+
+      {/* Metrics */}
+      <div className="grid grid-cols-4 gap-2 border-b border-border/60 p-3">
+        {cat.metrics.map((m) => (
+          <div key={m.label} className="text-center">
+            <div className="flex items-center justify-center gap-1">
+              <span className={cn("size-1.5 rounded-full", STATUS_DOT[m.status])} />
+              <span className="text-[10px] font-medium text-muted-foreground">
+                {m.label}
+              </span>
+            </div>
+            <div className="mt-0.5 text-sm font-bold">{m.value}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Advisory */}
+      <div className="p-4">
+        <p className="text-sm leading-relaxed text-foreground/90">{cat.advisory}</p>
+      </div>
+    </Card>
   );
 }
