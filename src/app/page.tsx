@@ -1,6 +1,6 @@
 "use client";
 
-import { useStore } from "@/lib/store";
+import { useStore, useHydrated } from "@/lib/store";
 import { Header } from "@/components/farmmart/header";
 import { Footer } from "@/components/farmmart/footer";
 import { LoginView } from "@/components/farmmart/login-view";
@@ -12,9 +12,22 @@ import { DashboardView } from "@/components/farmmart/dashboard-view";
 import { AdvisorView } from "@/components/farmmart/advisor-view";
 import { WeatherView } from "@/components/farmmart/weather-view";
 import { InsightsView } from "@/components/farmmart/insights-view";
+import { Loader2 } from "lucide-react";
 
 export default function Home() {
   const { authed, view } = useStore();
+  const hydrated = useHydrated();
+
+  // Wait for the persisted store to hydrate before rendering anything.
+  // This prevents the role/view from flashing to defaults (BUYER/marketplace)
+  // on refresh, which caused farmers to see the buyer dashboard.
+  if (!hydrated) {
+    return (
+      <div className="grid min-h-screen place-items-center">
+        <Loader2 className="size-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   // Not authenticated — show the login / signup page (no header/footer)
   if (!authed) {

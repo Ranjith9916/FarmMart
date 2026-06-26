@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { CartItem, Role, ViewKey } from "./types";
+import { useSyncExternalStore } from "react";
 
 export interface AuthUser {
   id: string;
@@ -115,6 +116,7 @@ export const useStore = create<FarmMartState>()(
         authed: state.authed,
         authUser: state.authUser,
         role: state.role,
+        view: state.view,
         cart: state.cart,
       }),
     }
@@ -129,4 +131,19 @@ export function cartTotals(cart: CartItem[]) {
   const tax = Math.round(subtotal * 0.02 * 100) / 100;
   const total = subtotal + shipping + tax;
   return { itemCount, subtotal, shipping, tax, total };
+}
+
+// Hydration hook — returns true once the persisted store has been loaded
+// from localStorage. Use this to prevent rendering with default values
+// before hydration (which causes the role/view to flash to defaults).
+export function useHydrated() {
+  // On the server, the store is never hydrated.
+  // On the client, Zustand persist hydrates synchronously in createJSONStorage,
+  // but we need a render cycle to reflect it. Using useSyncExternalStore avoids
+  // the setState-in-effect lint rule.
+  return useSyncExternalStore(
+    () => () => {},
+    () => true, // client: always hydrated (Zustand persists synchronously)
+    () => false // server: not hydrated
+  );
 }
