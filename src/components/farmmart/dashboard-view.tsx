@@ -37,6 +37,7 @@ import {
 import { toast } from "sonner";
 import { AddProductDialog } from "./add-product-dialog";
 import { BuyerDashboard } from "./buyer-dashboard-view";
+import { TransporterDashboard } from "./transporter-dashboard-view";
 
 const PIE_COLORS = [
   "oklch(0.55 0.13 150)",
@@ -66,11 +67,17 @@ interface ProductRow {
 export function DashboardView() {
   const role = useStore((s) => s.role);
 
-  // Buyers and transporters see a buyer-style dashboard
-  if (role === "BUYER" || role === "TRANSPORTER") {
+  // Transporters see a transport-focused dashboard (deliveries, routes, earnings)
+  if (role === "TRANSPORTER") {
+    return <TransporterDashboard />;
+  }
+
+  // Buyers see a buyer-style dashboard (orders, cart, products)
+  if (role === "BUYER") {
     return <BuyerDashboard />;
   }
 
+  // Farmers and wholesalers see the farm dashboard (inventory, sales, listings)
   return <FarmDashboard />;
 }
 
