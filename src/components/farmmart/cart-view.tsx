@@ -89,7 +89,7 @@ const EMI_PLANS = [
   { id: "12m", label: "12 Months", rate: 14, desc: "14% interest" },
 ];
 
-type CheckoutStep = "details" | "upi_apps" | "processing" | "done";
+type CheckoutStep = "details" | "upi_apps" | "upi_pay" | "processing" | "done";
 
 export function CartView() {
   const { cart, updateQuantity, removeFromCart, clearCart, setView, authUser } = useStore();
@@ -107,6 +107,7 @@ export function CartView() {
   const [selectedEmi, setSelectedEmi] = useState("");
   const [selectedUpiApp, setSelectedUpiApp] = useState("");
   const [upiId, setUpiId] = useState("");
+  const [upiPin, setUpiPin] = useState("");
 
   const resetCheckout = () => {
     setStep("details");
@@ -114,6 +115,7 @@ export function CartView() {
     setPlacing(false);
     setSelectedUpiApp("");
     setUpiId("");
+    setUpiPin("");
   };
 
   const placeOrder = async (paymentMethodLabel?: string) => {
@@ -159,16 +161,27 @@ export function CartView() {
 
   const handleUPIAppSelect = (appId: string) => {
     setSelectedUpiApp(appId);
-    // Simulate redirect to UPI app, then process payment
-    const appName = UPI_APPS.find((a) => a.id === appId)?.name || appId;
-    setTimeout(() => {
-      placeOrder(`UPI - ${appName}`);
-    }, 600);
+    setUpiPin("");
+    // Show the UPI app's payment screen — order is placed only after PIN confirmation
+    setStep("upi_pay");
+  };
+
+  const handleUPIAppPay = () => {
+    if (upiPin.length < 4) {
+      toast.error("Enter a 4-digit UPI PIN");
+      return;
+    }
+    const appName = UPI_APPS.find((a) => a.id === selectedUpiApp)?.name || selectedUpiApp;
+    placeOrder(`UPI - ${appName}`);
   };
 
   const handleUPIIdPay = () => {
     if (!upiId.trim() || !upiId.includes("@")) {
       toast.error("Enter a valid UPI ID (e.g., name@bank)");
+      return;
+    }
+    if (upiPin.length < 4) {
+      toast.error("Enter a 4-digit UPI PIN");
       return;
     }
     placeOrder(`UPI - ${upiId.trim()}`);
@@ -515,16 +528,176 @@ export function CartView() {
                     placeholder="yourname@bank"
                     value={upiId}
                     onChange={(e) => setUpiId(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleUPIIdPay()}
                   />
-                  <Button onClick={handleUPIIdPay} disabled={placing}>
-                    Pay
+                  <Button
+                    onClick={() => {
+                      if (!upiId.trim() || !upiId.includes("@")) {
+                        toast.error("Enter a valid UPI ID (e.g., name@bank)");
+                        return;
+                      }
+                      setSelectedUpiApp("UPI_ID");
+                      setUpiPin("");
+                      setStep("upi_pay");
+                    }}
+                    disabled={!upiId.trim() || !upiId.includes("@")}
+                  >
+                    Continue
                   </Button>
                 </div>
                 <p className="mt-1 text-xs text-muted-foreground">
                   Enter your UPI ID to receive a payment request
                 </p>
               </div>
+            </>
+          ) : step === "upi_pay" ? (
+            /* Step: UPI App Payment Screen (simulated) */
+            <>
+              <DialogHeader>
+                <button
+                  onClick={() => {
+                    setStep("upi_apps");
+                    setUpiPin("");
+                  }}
+                  className="mb-2 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+                >
+                  <ArrowLeft className="size-4" /> Back
+                </button>
+              </DialogHeader>
+
+              {/* Simulated UPI App Payment Screen */}
+              {(() => {
+                const app =
+                  UPI_APPS.find((a) => a.id === selectedUpiApp) ||
+                  UPI_APPS.find((a) => a.id === "OtherUPI")!;
+                const isUpiId = selectedUpiApp === "UPI_ID";
+                const displayName = isUpiId
+                  ? upiId.trim()
+                  : app.name;
+
+                return (
+                  <div className="space-y-4">
+                    {/* App header banner */}
+                    <div
+                      className={cn(
+                        "flex items-center gap-3 rounded-xl p-4 text-white",
+                        isUpiId ? "bg-gray-700" : app.color
+                      )}
+                    >
+                      <div className="grid size-12 place-items-center rounded-full bg-white/20 text-lg font-bold backdrop-blur">
+                        {isUpiId ? "↑" : app.initials}
+                      </div>
+                      <div>
+                        <div className="text-lg font-bold">
+                          {isUpiId ? "UPI Payment" : app.name}
+                        </div>
+                        <div className="text-xs text-white/80">
+                          Secure payment via UPI
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Payment details */}
+                    <div className="rounded-xl border border-border/60 p-4 space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Merchant</span>
+                        <span className="font-medium">FarmMart</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Paying to</span>
+                        <span className="font-medium">farmmart@hdfcbank</span>
+                      </div>
+                      {isUpiId && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">From</span>
+                          <span className="font-medium">{upiId.trim()}</span>
+                        </div>
+                      )}
+                      <Separator className="my-1" />
+                      <div className="flex justify-between">
+                        <span className="text-sm text-muted-foreground">
+                          Amount
+                        </span>
+                        <span className="text-2xl font-bold text-primary">
+                          {fmtINR(totals.total)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* PIN entry */}
+                    <div className="rounded-xl border border-border/60 p-4">
+                      <label className="text-sm font-medium flex items-center gap-1.5">
+                        <Lock className="size-3.5" />
+                        Enter UPI PIN
+                      </label>
+                      <p className="mt-0.5 text-xs text-muted-foreground">
+                        Enter your 4-digit UPI PIN to confirm payment
+                      </p>
+                      <div className="mt-3 flex justify-center gap-3">
+                        {[0, 1, 2, 3].map((i) => (
+                          <div
+                            key={i}
+                            className={cn(
+                              "grid size-12 place-items-center rounded-lg border-2 text-xl font-bold transition-all",
+                              upiPin.length > i
+                                ? "border-primary bg-primary/10 text-primary"
+                                : "border-border bg-secondary"
+                            )}
+                          >
+                            {upiPin.length > i ? "•" : ""}
+                          </div>
+                        ))}
+                      </div>
+                      <Input
+                        type="password"
+                        inputMode="numeric"
+                        maxLength={4}
+                        value={upiPin}
+                        onChange={(e) =>
+                          setUpiPin(
+                            e.target.value.replace(/[^0-9]/g, "").slice(0, 4)
+                          )
+                        }
+                        onKeyDown={(e) =>
+                          e.key === "Enter" &&
+                          upiPin.length === 4 &&
+                          (isUpiId ? handleUPIIdPay() : handleUPIAppPay())
+                        }
+                        className="mt-3 text-center text-lg tracking-[0.5em]"
+                        placeholder="••••"
+                        autoFocus
+                      />
+                    </div>
+
+                    {/* Security note */}
+                    <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
+                      <ShieldCheck className="size-3.5 text-primary" />
+                      Your PIN is encrypted and never stored
+                    </div>
+
+                    {/* Pay button */}
+                    <Button
+                      className="w-full gap-2"
+                      size="lg"
+                      onClick={() =>
+                        isUpiId ? handleUPIIdPay() : handleUPIAppPay()
+                      }
+                      disabled={placing || upiPin.length < 4}
+                    >
+                      {placing ? (
+                        <Loader2 className="size-4 animate-spin" />
+                      ) : (
+                        <Lock className="size-4" />
+                      )}
+                      Pay {fmtINR(totals.total)}
+                    </Button>
+
+                    <p className="text-center text-[11px] text-muted-foreground">
+                      By proceeding, you authorize FarmMart to debit{" "}
+                      {fmtINR(totals.total)} from your account via {displayName}.
+                    </p>
+                  </div>
+                );
+              })()}
             </>
           ) : (
             /* Step: Checkout details */
