@@ -7,6 +7,14 @@ import type { Order, OrderStatus } from "@/lib/types";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import {
   Loader2,
   Package,
@@ -17,6 +25,8 @@ import {
   MapPin,
   ChevronRight,
   PackageCheck,
+  Ban,
+  AlertTriangle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -53,6 +63,9 @@ export function OrdersView() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [cancelTarget, setCancelTarget] = useState<Order | null>(null);
+  const [cancelReason, setCancelReason] = useState("");
+  const [cancelling, setCancelling] = useState(false);
 
   const load = useCallback(async () => {
     if (!userId) {
@@ -92,18 +105,27 @@ export function OrdersView() {
     }
   };
 
-  const cancel = async (id: string) => {
+  const cancel = async () => {
+    if (!cancelTarget) return;
+    setCancelling(true);
     try {
-      const data = await api<{ order: Order }>(`/api/orders/${id}`, {
+      const data = await api<{ order: Order }>(`/api/orders/${cancelTarget.id}`, {
         method: "PATCH",
-        body: JSON.stringify({ action: "cancel" }),
+        body: JSON.stringify({
+          action: "cancel",
+          reason: cancelReason.trim() || undefined,
+        }),
       });
       setOrders((prev) =>
-        prev.map((o) => (o.id === id ? { ...o, ...data.order } : o))
+        prev.map((o) => (o.id === cancelTarget.id ? { ...o, ...data.order } : o))
       );
-      toast.success("Order cancelled");
+      toast.success("Order cancelled successfully");
+      setCancelTarget(null);
+      setCancelReason("");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to cancel");
+    } finally {
+      setCancelling(false);
     }
   };
 
@@ -146,7 +168,10 @@ export function OrdersView() {
             const Icon = STATUS_ICON[order.status] || Clock;
             const currentStep = STATUS_FLOW.indexOf(order.status);
             const isOpen = expanded === order.id;
-            const canCancel = order.status === "PENDING" || order.status === "CONFIRMED";
+            const canCancel =
+              order.status === "PENDING" ||
+              order.status === "CONFIRMED" ||
+              order.status === "PACKED";
             return (
               <Card key={order.id} className="overflow-hidden">
                 {/* Header row */}
@@ -272,19 +297,21 @@ export function OrdersView() {
                         <span className="text-muted-foreground">Ship to: </span>
                         {order.shippingAddress}
                       </div>
-                      <div className="space-x-2">
+                      <div className="flex flex-wrap gap-2">
                         {isFarmer && order.status !== "DELIVERED" && order.status !== "CANCELLED" && (
                           <Button size="sm" onClick={() => advance(order.id)}>
                             Advance status
                           </Button>
                         )}
-                        {!isFarmer && canCancel && (
+                        {canCancel && (
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => cancel(order.id)}
+                            className="gap-1.5 border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                            onClick={() => setCancelTarget(order)}
                           >
-                            Cancel order
+                            <Ban className="size-3.5" />
+                            {isFarmer ? "Reject order" : "Cancel order"}
                           </Button>
                         )}
                       </div>
@@ -296,6 +323,122 @@ export function OrdersView() {
           })}
         </div>
       )}
+
+      {/* Cancel confirmation dialog */}
+      <Dialog
+        open={!!cancelTarget}
+        onOpenChange={(o) => {
+          if (!o) {
+            setCancelTarget(null);
+            setCancelReason("");
+          }
+        }}
+      >
+        <DialogContent className="max-w-md" aria-describedby={undefined}>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-destructive">
+              <div className="grid size-8 place-items-center rounded-lg bg-destructive/10">
+                <AlertTriangle className="size-5" />
+              </div>
+              {isFarmer ? "Reject this order?" : "Cancel this order?"}
+            </DialogTitle>
+            <DialogDescription>
+              {cancelTarget && (
+                <>
+                  Order{" "}
+                  <span className="font-semibold text-foreground">
+                    {cancelTarget.orderNumber}
+                  </span>{" "}
+                  — {fmtINR(cancelTarget.total)} ·{" "}
+                  {cancelTarget.items.length} item
+                  {cancelTarget.items.length !== 1 ? "s" : ""}
+                  {isFarmer && (
+                    <>
+                      {" "}
+                      from{" "}
+                      <span className="font-semibold text-foreground">
+                        {cancelTarget.buyer?.name || "Buyer"}
+                      </span>
+                    </>
+                  )}
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="rounded-lg bg-destructive/5 border border-destructive/20 p-3 text-sm text-muted-foreground">
+            {isFarmer
+              ? "Rejecting this order will notify the buyer, process a refund, and restore the product stock to your inventory."
+              : "Cancelling this order will process a full refund and restore the product stock. This action cannot be undone."}
+          </div>
+
+          <div>
+            <label className="text-sm font-medium">
+              Reason (optional)
+            </label>
+            <Textarea
+              value={cancelReason}
+              onChange={(e) => setCancelReason(e.target.value)}
+              placeholder={
+                isFarmer
+                  ? "e.g., Out of stock, quality issue, weather damage…"
+                  : "e.g., Changed my mind, found a better price, no longer needed…"
+              }
+              rows={2}
+              className="mt-1"
+            />
+          </div>
+
+          {/* Item summary */}
+          {cancelTarget && (
+            <div className="max-h-32 overflow-y-auto fm-scroll space-y-1 rounded-lg border border-border/60 p-2">
+              {cancelTarget.items.map((it) => (
+                <div key={it.id} className="flex items-center gap-2 text-sm">
+                  <img
+                    src={it.imageUrl}
+                    alt={it.name}
+                    className="size-8 rounded object-cover"
+                  />
+                  <span className="flex-1 truncate">{it.name}</span>
+                  <span className="text-muted-foreground">
+                    {it.quantity} {it.unit}
+                  </span>
+                  <span className="font-medium">
+                    {fmtINR(it.price * it.quantity)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="flex gap-2 pt-1">
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={() => {
+                setCancelTarget(null);
+                setCancelReason("");
+              }}
+              disabled={cancelling}
+            >
+              Keep order
+            </Button>
+            <Button
+              variant="destructive"
+              className="flex-1 gap-1.5"
+              onClick={cancel}
+              disabled={cancelling}
+            >
+              {cancelling ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Ban className="size-4" />
+              )}
+              {isFarmer ? "Reject order" : "Cancel order"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

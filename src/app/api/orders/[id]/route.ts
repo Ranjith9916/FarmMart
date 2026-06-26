@@ -8,7 +8,7 @@ const FLOW: Record<string, string> = {
   SHIPPED: "DELIVERED",
 };
 
-// PATCH /api/orders/[id] — advance order status
+// PATCH /api/orders/[id] — advance or cancel an order
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -16,18 +16,36 @@ export async function PATCH(
   try {
     const { id } = await params;
     const body = await req.json();
-    const { action } = body as { action: "advance" | "cancel" };
+    const { action, reason } = body as {
+      action: "advance" | "cancel";
+      reason?: string;
+    };
 
-    const order = await db.order.findUnique({ where: { id } });
+    const order = await db.order.findUnique({
+      where: { id },
+      include: { items: true },
+    });
     if (!order) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
+    // Can't modify already-delivered or already-cancelled orders
+    if (order.status === "DELIVERED" || order.status === "CANCELLED") {
+      return NextResponse.json(
+        { error: `Order is already ${order.status.toLowerCase()}` },
+        { status: 400 }
+      );
+    }
+
     let status = order.status;
     let trackingNote = order.trackingNote;
+    let paymentStatus = order.paymentStatus;
+
     if (action === "cancel") {
       status = "CANCELLED";
-      trackingNote = "Order cancelled by user.";
+      paymentStatus = "REFUNDED";
+      const reasonText = reason ? ` Reason: ${reason}.` : "";
+      trackingNote = `Order cancelled.${reasonText}`;
     } else if (action === "advance") {
       status = FLOW[order.status] || order.status;
       const notes: Record<string, string> = {
@@ -41,9 +59,23 @@ export async function PATCH(
 
     const updated = await db.order.update({
       where: { id },
-      data: { status, trackingNote },
+      data: { status, trackingNote, paymentStatus },
       include: { items: true },
     });
+
+    // If cancelled, restore product stock & reduce sold count
+    if (action === "cancel") {
+      for (const item of order.items) {
+        await db.product.update({
+          where: { id: item.productId },
+          data: {
+            stock: { increment: item.quantity },
+            sold: { decrement: item.quantity },
+          },
+        });
+      }
+    }
+
     return NextResponse.json({ order: updated });
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Unknown error";
