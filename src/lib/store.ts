@@ -133,17 +133,21 @@ export function cartTotals(cart: CartItem[]) {
   return { itemCount, subtotal, shipping, tax, total };
 }
 
-// Hydration hook — returns true once the persisted store has been loaded
-// from localStorage. Use this to prevent rendering with default values
-// before hydration (which causes the role/view to flash to defaults).
+// Hydration hook — returns true once the persisted store has finished
+// loading from localStorage. Prevents rendering with default values
+// (role=BUYER, view=marketplace) before hydration on refresh.
 export function useHydrated() {
-  // On the server, the store is never hydrated.
-  // On the client, Zustand persist hydrates synchronously in createJSONStorage,
-  // but we need a render cycle to reflect it. Using useSyncExternalStore avoids
-  // the setState-in-effect lint rule.
   return useSyncExternalStore(
-    () => () => {},
-    () => true, // client: always hydrated (Zustand persists synchronously)
-    () => false // server: not hydrated
+    (onChange) => {
+      // Subscribe to hydration completion events
+      const unsub = useStore.persist.onFinishHydration(() => onChange());
+      // If already hydrated, schedule a re-render
+      if (useStore.persist.hasHydrated()) {
+        queueMicrotask(onChange);
+      }
+      return () => unsub();
+    },
+    () => useStore.persist.hasHydrated(),
+    () => false
   );
 }
