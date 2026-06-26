@@ -27,6 +27,8 @@ import {
   ShieldCheck,
   CalendarDays,
   Loader2,
+  Phone,
+  MessageSquare,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -234,22 +236,48 @@ export function ProductDetailDialog() {
                   </div>
                 </div>
 
-                {/* Farmer card */}
+                {/* Farmer / Seller card */}
                 <div className="rounded-xl border border-border/60 bg-secondary/40 p-3">
                   <div className="flex items-center gap-3">
                     <div className="grid size-10 place-items-center rounded-full bg-primary text-primary-foreground font-semibold">
                       {product.farmer.name.charAt(0)}
                     </div>
-                    <div className="flex-1">
+                    <div className="flex-1 min-w-0">
                       <div className="font-semibold">{product.farmer.name}</div>
                       <div className="text-xs text-muted-foreground">
                         {product.farmer.location} · ⭐ {product.farmer.rating}
                       </div>
                     </div>
-                    <Badge variant="outline" className="gap-1">
+                    <Badge variant="outline" className="gap-1 shrink-0">
                       <ShieldCheck className="size-3 text-primary" /> Verified
                     </Badge>
                   </div>
+
+                  {/* Seller contact info */}
+                  {product.farmer.phone && (
+                    <div className="mt-3 flex items-center gap-2 border-t border-border/60 pt-3">
+                      <div className="flex items-center gap-1.5 text-sm text-muted-foreground flex-1 min-w-0">
+                        <Phone className="size-3.5 text-primary shrink-0" />
+                        <span className="truncate font-medium text-foreground">
+                          {product.farmer.phone}
+                        </span>
+                      </div>
+                      <a
+                        href={`tel:${product.farmer.phone.replace(/\s/g, "")}`}
+                        className="inline-flex items-center gap-1 rounded-lg bg-primary/10 px-2.5 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-primary/20"
+                      >
+                        <Phone className="size-3" />
+                        Call
+                      </a>
+                      <a
+                        href={`sms:${product.farmer.phone.replace(/\s/g, "")}`}
+                        className="inline-flex items-center gap-1 rounded-lg bg-secondary px-2.5 py-1.5 text-xs font-semibold text-secondary-foreground transition-colors hover:bg-secondary/80"
+                      >
+                        <MessageSquare className="size-3" />
+                        Message
+                      </a>
+                    </div>
+                  )}
                 </div>
 
                 {/* Quantity + add to cart */}
