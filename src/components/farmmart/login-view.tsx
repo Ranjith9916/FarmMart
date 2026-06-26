@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useStore, type AuthUser } from "@/lib/store";
 import { api, ROLE_LABELS } from "@/lib/api";
 import type { Role } from "@/lib/types";
@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -28,9 +29,11 @@ import {
   EyeOff,
   Leaf,
   ArrowRight,
+  Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 
 type Mode = "login" | "register";
 
@@ -39,6 +42,7 @@ export function LoginView() {
   const [mode, setMode] = useState<Mode>("login");
   const [loading, setLoading] = useState(false);
   const [showPw, setShowPw] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
 
   // Form state
   const [email, setEmail] = useState("");
@@ -47,6 +51,28 @@ export function LoginView() {
   const [role, setRole] = useState<Role>("BUYER");
   const [location, setLocation] = useState("");
   const [phone, setPhone] = useState("");
+
+  // Mouse parallax
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+  const springX = useSpring(mouseX, { stiffness: 50, damping: 20 });
+  const springY = useSpring(mouseY, { stiffness: 50, damping: 20 });
+  const bgX = useTransform(springX, [-0.5, 0.5], [20, -20]);
+  const bgY = useTransform(springY, [-0.5, 0.5], [10, -10]);
+  const cardX = useTransform(springX, [-0.5, 0.5], [-8, 8]);
+  const cardY = useTransform(springY, [-0.5, 0.5], [-5, 5]);
+  const sceneRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      const x = e.clientX / window.innerWidth - 0.5;
+      const y = e.clientY / window.innerHeight - 0.5;
+      mouseX.set(x);
+      mouseY.set(y);
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, [mouseX, mouseY]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,7 +95,6 @@ export function LoginView() {
     setLoading(true);
     try {
       if (mode === "login") {
-        // Sign in — authenticate and enter the app
         const data = await api<{ user: AuthUser; error?: string }>(
           "/api/auth/login",
           {
@@ -80,15 +105,11 @@ export function LoginView() {
         login(data.user);
         toast.success(`Welcome back, ${data.user.name.split(" ")[0]}!`);
       } else {
-        // Sign up — create the account, then switch to sign-in mode
         await api("/api/auth/register", {
           method: "POST",
           body: JSON.stringify({ name, email, password, role, location, phone }),
         });
-        toast.success(
-          "Account created successfully! Please sign in to continue."
-        );
-        // Reset to sign-in mode, keep the email pre-filled for convenience
+        toast.success("Account created successfully! Please sign in to continue.");
         setMode("login");
         setPassword("");
       }
@@ -99,270 +120,116 @@ export function LoginView() {
     }
   };
 
+  const socialLogin = (provider: string) => {
+    toast.info(`${provider} login is not available in this demo. Please use email sign-in.`);
+  };
+
   return (
     <div className="relative min-h-screen w-full overflow-hidden">
-      {/* === FULL-SCREEN ANIMATED SUNSET FARM SCENE === */}
-      <div className="absolute inset-0" aria-hidden>
-        {/* SKY GRADIENT — deep blue to golden sunset */}
+      {/* === 3D RENDERED BACKGROUND with parallax === */}
+      <motion.div
+        ref={sceneRef}
+        className="absolute inset-0"
+        style={{ x: bgX, y: bgY, scale: 1.05 }}
+        aria-hidden
+      >
+        {/* 3D rendered background image */}
         <div
-          className="absolute inset-0"
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: "url(/login-3d-bg.jpg)" }}
+        />
+        {/* Gradient overlay for readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/15 via-transparent to-black/40" />
+      </motion.div>
+
+      {/* === ANIMATED OVERLAYS === */}
+      {/* Drifting clouds */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden>
+        <div className="absolute left-[5%] top-[8%] opacity-40" style={{ animation: "cloudDrift 50s linear infinite" }}>
+          <SunsetCloud />
+        </div>
+        <div className="absolute right-[20%] top-[5%] opacity-35" style={{ animation: "cloudDrift 65s linear infinite", animationDelay: "-15s" }}>
+          <SunsetCloud size={0.7} />
+        </div>
+        <div className="absolute left-[55%] top-[15%] opacity-30" style={{ animation: "cloudDrift 70s linear infinite", animationDelay: "-30s" }}>
+          <SunsetCloud size={0.6} />
+        </div>
+      </div>
+
+      {/* Flying birds */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden>
+        <div className="absolute left-0 top-[22%]" style={{ animation: "birdFly1 30s linear infinite" }}>
+          <Bird />
+        </div>
+        <div className="absolute left-0 top-[19%]" style={{ animation: "birdFly1 33s linear infinite", animationDelay: "-3s" }}>
+          <Bird size={0.7} delay={0.3} />
+        </div>
+        <div className="absolute left-0 top-[25%]" style={{ animation: "birdFly1 35s linear infinite", animationDelay: "-6s" }}>
+          <Bird size={0.65} delay={0.6} />
+        </div>
+        <div className="absolute left-0 top-[14%]" style={{ animation: "birdFly2 40s linear infinite", animationDelay: "-10s" }}>
+          <Bird size={0.5} delay={0.2} />
+        </div>
+        <div className="absolute left-0 top-[17%]" style={{ animation: "birdFly2 45s linear infinite", animationDelay: "-20s" }}>
+          <Bird size={0.45} delay={0.5} />
+        </div>
+        <div className="absolute left-0 top-[12%]" style={{ animation: "birdFly2 42s linear infinite", animationDelay: "-28s" }}>
+          <Bird size={0.4} delay={0.7} />
+        </div>
+      </div>
+
+      {/* Sun glow */}
+      <div className="absolute right-[8%] top-[45%] pointer-events-none" aria-hidden>
+        <div
+          className="size-80 rounded-full blur-3xl animate-pulse"
+          style={{ background: "rgba(255, 200, 80, 0.2)" }}
+        />
+      </div>
+
+      {/* Floating dust particles */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden>
+        {Array.from({ length: 20 }).map((_, i) => (
+          <div
+            key={i}
+            className="absolute rounded-full"
+            style={{
+              left: `${(i * 37) % 100}%`,
+              top: `${(i * 53) % 100}%`,
+              width: `${2 + (i % 3)}px`,
+              height: `${2 + (i % 3)}px`,
+              background: "rgba(255, 230, 180, 0.6)",
+              animation: `floatParticle ${8 + (i % 5)}s ease-in-out infinite`,
+              animationDelay: `${i * 0.5}s`,
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Drifting mist */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden>
+        <div
+          className="absolute left-0 bottom-[28%] h-24 w-full"
           style={{
             background:
-              "linear-gradient(to bottom, #1a3a5f 0%, #2c5282 15%, #4a7abc 30%, #7ba8d8 45%, #f9c784 62%, #ff9a56 78%, #ffcc80 90%, #ffd89b 100%)",
+              "linear-gradient(to right, transparent, rgba(255,220,180,0.1) 30%, rgba(255,220,180,0.15) 50%, rgba(255,220,180,0.1) 70%, transparent)",
+            animation: "mistDrift 25s ease-in-out infinite alternate",
           }}
         />
-
-        {/* SETTING SUN — lower right with golden glow */}
-        <div className="absolute right-[12%] top-[55%]">
-          {/* Large outer glow */}
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-            <div
-              className="size-72 rounded-full blur-3xl animate-pulse"
-              style={{ background: "rgba(255, 221, 0, 0.3)" }}
-            />
-          </div>
-          {/* Inner glow */}
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-            <div
-              className="size-44 rounded-full blur-2xl"
-              style={{ background: "rgba(255, 200, 80, 0.5)" }}
-            />
-          </div>
-          {/* Sun disc */}
-          <div
-            className="relative size-28 rounded-full"
-            style={{
-              background: "radial-gradient(circle, #ffeb3b 0%, #ffdd00 40%, #ff9a56 100%)",
-              boxShadow: "0 0 60px 20px rgba(255, 221, 0, 0.5)",
-              animation: "sunGlow 6s ease-in-out infinite alternate",
-            }}
-          />
-          {/* Sun reflection rays */}
-          <div
-            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 size-96 rounded-full"
-            style={{
-              background:
-                "radial-gradient(circle, rgba(255,221,0,0.08) 0%, transparent 70%)",
-            }}
-          />
-        </div>
-
-        {/* CLOUDS — golden-lit sunset clouds */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div
-            className="absolute left-[8%] top-[12%] opacity-70"
-            style={{ animation: "cloudDrift 50s linear infinite" }}
-          >
-            <SunsetCloud />
-          </div>
-          <div
-            className="absolute right-[20%] top-[8%] opacity-60"
-            style={{ animation: "cloudDrift 65s linear infinite", animationDelay: "-15s" }}
-          >
-            <SunsetCloud size={0.7} />
-          </div>
-          <div
-            className="absolute left-[45%] top-[22%] opacity-50"
-            style={{ animation: "cloudDrift 70s linear infinite", animationDelay: "-30s" }}
-          >
-            <SunsetCloud size={0.6} />
-          </div>
-        </div>
-
-        {/* FLYING BIRDS — V-formation, dark silhouettes */}
-        <div className="absolute inset-0 overflow-hidden">
-          {/* Flock 1 — lower sky */}
-          <div className="absolute left-0 top-[30%]" style={{ animation: "birdFly1 30s linear infinite" }}>
-            <Bird />
-          </div>
-          <div className="absolute left-0 top-[27%]" style={{ animation: "birdFly1 33s linear infinite", animationDelay: "-2s" }}>
-            <Bird size={0.7} delay={0.3} />
-          </div>
-          <div className="absolute left-0 top-[33%]" style={{ animation: "birdFly1 35s linear infinite", animationDelay: "-5s" }}>
-            <Bird size={0.65} delay={0.6} />
-          </div>
-          <div className="absolute left-0 top-[29%]" style={{ animation: "birdFly1 32s linear infinite", animationDelay: "-8s" }}>
-            <Bird size={0.6} delay={0.9} />
-          </div>
-          {/* Flock 2 — higher sky, smaller */}
-          <div className="absolute left-0 top-[18%]" style={{ animation: "birdFly2 40s linear infinite", animationDelay: "-10s" }}>
-            <Bird size={0.5} delay={0.2} />
-          </div>
-          <div className="absolute left-0 top-[21%]" style={{ animation: "birdFly2 45s linear infinite", animationDelay: "-20s" }}>
-            <Bird size={0.45} delay={0.5} />
-          </div>
-          <div className="absolute left-0 top-[16%]" style={{ animation: "birdFly2 42s linear infinite", animationDelay: "-28s" }}>
-            <Bird size={0.4} delay={0.7} />
-          </div>
-        </div>
-
-        {/* MIST/FOG — drifting between mountain layers */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div
-            className="absolute left-0 bottom-[42%] h-16 w-full"
-            style={{
-              background:
-                "linear-gradient(to right, transparent, rgba(255,255,255,0.15) 30%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0.15) 70%, transparent)",
-              animation: "mistDrift 25s ease-in-out infinite alternate",
-            }}
-          />
-          <div
-            className="absolute left-0 bottom-[36%] h-12 w-full"
-            style={{
-              background:
-                "linear-gradient(to right, transparent, rgba(255,220,180,0.12) 40%, rgba(255,220,180,0.18) 60%, transparent)",
-              animation: "mistDrift 30s ease-in-out infinite alternate-reverse",
-              animationDelay: "-5s",
-            }}
-          />
-        </div>
-
-        {/* MOUNTAINS — back layer (distant, hazy pale blue) */}
-        <svg className="absolute bottom-[38%] left-0 w-full" viewBox="0 0 1200 200" preserveAspectRatio="none">
-          <path
-            d="M0,200 L0,120 Q100,80 200,100 T400,90 Q500,60 600,85 T800,75 Q900,50 1000,80 T1200,70 L1200,200 Z"
-            fill="#5a7a9a"
-            opacity="0.5"
-          />
-        </svg>
-
-        {/* MOUNTAINS — mid layer (soft blue-gray, rolling) */}
-        <svg className="absolute bottom-[30%] left-0 w-full" viewBox="0 0 1200 250" preserveAspectRatio="none">
-          <defs>
-            <linearGradient id="mountainMid2" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#3a5a7a" />
-              <stop offset="100%" stopColor="#2d4a6a" />
-            </linearGradient>
-          </defs>
-          <path
-            d="M0,250 L0,150 Q80,100 160,130 Q240,80 320,110 Q400,70 480,100 Q560,60 640,95 Q720,75 800,105 Q880,70 960,100 Q1040,80 1120,110 Q1180,95 1200,105 L1200,250 Z"
-            fill="url(#mountainMid2)"
-            opacity="0.85"
-          />
-        </svg>
-
-        {/* MOUNTAINS — front layer (dark slate silhouettes, jagged peaks) */}
-        <svg className="absolute bottom-[22%] left-0 w-full" viewBox="0 0 1200 200" preserveAspectRatio="none">
-          <defs>
-            <linearGradient id="mountainFront2" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#2d3e50" />
-              <stop offset="100%" stopColor="#1a2a3a" />
-            </linearGradient>
-          </defs>
-          <path
-            d="M0,200 L0,120 L60,80 L120,110 L180,50 L240,90 L300,40 L360,85 L420,30 L480,75 L540,45 L600,90 L660,35 L720,80 L780,50 L840,95 L900,40 L960,85 L1020,55 L1080,90 L1140,45 L1200,80 L1200,200 Z"
-            fill="url(#mountainFront2)"
-          />
-        </svg>
-
-        {/* RIVER — winding through the valley with reflection */}
-        <svg className="absolute bottom-[15%] left-0 w-full" viewBox="0 0 1200 100" preserveAspectRatio="none">
-          <defs>
-            <linearGradient id="riverGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#f9c784" stopOpacity="0.6" />
-              <stop offset="50%" stopColor="#4a90e2" stopOpacity="0.5" />
-              <stop offset="100%" stopColor="#2c5282" stopOpacity="0.4" />
-            </linearGradient>
-          </defs>
-          <path
-            d="M0,60 Q200,50 350,55 Q500,60 600,45 Q700,30 800,40 Q900,50 1000,35 Q1100,25 1200,40 L1200,100 L0,100 Z"
-            fill="url(#riverGrad)"
-            opacity="0.7"
-          />
-          {/* Shimmer lines on river */}
-          <g stroke="rgba(255,221,0,0.2)" strokeWidth="1" fill="none">
-            <path d="M100,65 Q300,58 500,62 T900,55" />
-            <path d="M200,72 Q400,65 600,68 T1000,62" />
-          </g>
-        </svg>
-
-        {/* FARMLAND — golden fields with crop rows */}
-        <div className="absolute bottom-0 left-0 w-full">
-          {/* Back field — golden wheat */}
-          <svg className="absolute bottom-[6%] left-0 w-full" viewBox="0 0 1200 80" preserveAspectRatio="none">
-            <defs>
-              <linearGradient id="wheatField" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#ffd700" stopOpacity="0.8" />
-                <stop offset="100%" stopColor="#daa520" stopOpacity="0.9" />
-              </linearGradient>
-            </defs>
-            <path d="M0,80 L0,30 Q200,20 400,28 T800,25 T1200,30 L1200,80 Z" fill="url(#wheatField)" />
-            {/* Wheat row lines */}
-            <g stroke="rgba(139,90,0,0.3)" strokeWidth="1.5" fill="none">
-              <path d="M0,40 Q300,33 600,38 T1200,40" />
-              <path d="M0,50 Q300,43 600,48 T1200,50" />
-              <path d="M0,60 Q300,55 600,58 T1200,60" />
-            </g>
-          </svg>
-          {/* Front field — green crops */}
-          <svg className="absolute bottom-0 left-0 w-full" viewBox="0 0 1200 50" preserveAspectRatio="none">
-            <defs>
-              <linearGradient id="greenField" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#2e8b57" />
-                <stop offset="100%" stopColor="#1a5f1a" />
-              </linearGradient>
-            </defs>
-            <path d="M0,50 L0,15 Q150,8 300,12 T600,10 T900,14 T1200,12 L1200,50 Z" fill="url(#greenField)" />
-            {/* Crop tufts */}
-            <g fill="rgba(255,215,0,0.4)">
-              {Array.from({ length: 35 }).map((_, i) => (
-                <ellipse key={i} cx={i * 35 + 8} cy={14 + (i % 3) * 3} rx="2.5" ry="6" />
-              ))}
-            </g>
-          </svg>
-        </div>
-
-        {/* DIRT ROAD — winding path */}
-        <svg className="absolute bottom-[8%] left-[20%] w-[60%] h-32" viewBox="0 0 600 120" preserveAspectRatio="none" aria-hidden>
-          <path
-            d="M50,120 Q100,80 150,70 Q200,60 250,50 Q300,40 350,35 Q400,30 500,20"
-            stroke="#8b7355"
-            strokeWidth="12"
-            fill="none"
-            strokeLinecap="round"
-            opacity="0.6"
-          />
-          <path
-            d="M50,120 Q100,80 150,70 Q200,60 250,50 Q300,40 350,35 Q400,30 500,20"
-            stroke="#6b5d4f"
-            strokeWidth="2"
-            fill="none"
-            strokeLinecap="round"
-            opacity="0.4"
-            strokeDasharray="8 6"
-          />
-        </svg>
-
-        {/* Trees — left side */}
-        <svg className="absolute bottom-[14%] left-[5%] size-16" viewBox="0 0 40 60" aria-hidden>
-          <rect x="17" y="38" width="5" height="18" fill="#654321" />
-          <circle cx="20" cy="28" r="13" fill="#1a5f1a" />
-          <circle cx="12" cy="32" r="8" fill="#2e8b57" />
-          <circle cx="28" cy="32" r="8" fill="#2e8b57" />
-        </svg>
-        <svg className="absolute bottom-[12%] left-[12%] size-12" viewBox="0 0 40 60" aria-hidden>
-          <rect x="17" y="38" width="5" height="18" fill="#654321" />
-          <circle cx="20" cy="26" r="12" fill="#1a5f1a" />
-          <circle cx="13" cy="32" r="7" fill="#2e8b57" />
-          <circle cx="27" cy="32" r="7" fill="#2e8b57" />
-        </svg>
-        {/* Trees — right side */}
-        <svg className="absolute bottom-[13%] right-[6%] size-20" viewBox="0 0 40 60" aria-hidden>
-          <rect x="17" y="35" width="6" height="20" fill="#654321" />
-          <circle cx="20" cy="25" r="15" fill="#1a5f1a" />
-          <circle cx="10" cy="32" r="10" fill="#2e8b57" />
-          <circle cx="30" cy="32" r="10" fill="#2e8b57" />
-        </svg>
       </div>
 
       {/* === TOP BRAND BAR === */}
-      <div className="absolute left-0 top-0 z-10 flex w-full items-center justify-between p-5 sm:p-6">
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+        className="absolute left-0 top-0 z-20 flex w-full items-center justify-between p-5 sm:p-6"
+      >
         <div className="flex items-center gap-2.5">
           <div className="grid size-10 place-items-center rounded-xl bg-white/20 backdrop-blur-md shadow-lg">
             <Sprout className="size-5 text-white" />
           </div>
           <div>
-            <div className="text-lg font-bold tracking-tight text-white drop-shadow-md">FarmMart</div>
+            <div className="text-lg font-bold tracking-tight text-white drop-shadow-lg">FarmMart</div>
             <div className="text-[10px] text-white/80 drop-shadow">AI Agriculture Marketplace</div>
           </div>
         </div>
@@ -370,207 +237,283 @@ export function LoginView() {
           <Leaf className="size-3.5" />
           Trusted by 10,000+ farmers
         </div>
-      </div>
+      </motion.div>
 
       {/* === CENTERED GLASSMORPHISM LOGIN CARD === */}
       <div className="relative z-10 flex min-h-screen items-center justify-center p-4 sm:p-6">
-        <div className="w-full max-w-md rounded-2xl border border-white/30 bg-white/85 p-6 shadow-2xl backdrop-blur-xl sm:p-8">
-          {/* Mobile logo */}
-          <div className="mb-6 flex items-center justify-center gap-2 md:hidden">
-            <div className="grid size-10 place-items-center rounded-xl bg-primary text-primary-foreground">
-              <Sprout className="size-5" />
-            </div>
-            <span className="text-xl font-bold">FarmMart</span>
-          </div>
-
-          {/* Mode toggle */}
-          <div className="mb-6 inline-flex w-full rounded-lg border border-border bg-secondary/50 p-1">
-            <button
-              onClick={() => setMode("login")}
-              className={cn(
-                "flex-1 rounded-md px-5 py-1.5 text-sm font-medium transition-colors",
-                mode === "login"
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
+        <motion.div
+          initial={{ opacity: 0, y: 30, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          style={{ x: cardX, y: cardY }}
+          className="w-full max-w-md"
+        >
+          {/* Floating animation wrapper */}
+          <motion.div
+            animate={{ y: [0, -8, 0] }}
+            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <div className="rounded-3xl border border-white/30 bg-white/80 p-6 shadow-2xl backdrop-blur-2xl sm:p-8"
+              style={{ boxShadow: "0 25px 60px -10px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.1) inset" }}
             >
-              Sign In
-            </button>
-            <button
-              onClick={() => setMode("register")}
-              className={cn(
-                "flex-1 rounded-md px-5 py-1.5 text-sm font-medium transition-colors",
-                mode === "register"
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              Sign Up
-            </button>
-          </div>
-
-          <h2 className="text-2xl font-bold tracking-tight">
-            {mode === "login" ? "Welcome back" : "Create your account"}
-          </h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {mode === "login"
-              ? "Sign in to access the FarmMart marketplace."
-              : "Join FarmMart to buy, sell, and grow with AI-powered insights."}
-          </p>
-
-          <form onSubmit={submit} className="mt-6 space-y-4">
-            {mode === "register" && (
-              <Field
-                id="name"
-                label="Full name"
-                icon={UserIcon}
-                required
-                value={name}
-                onChange={setName}
-                placeholder="e.g., Ravi Sharma"
-                autoComplete="name"
-              />
-            )}
-
-            <Field
-              id="email"
-              label="Email address"
-              icon={Mail}
-              required
-              type="email"
-              value={email}
-              onChange={setEmail}
-              placeholder="you@example.com"
-              autoComplete="email"
-            />
-
-            <div>
-              <Label htmlFor="password" className="mb-1.5 flex items-center gap-1">
-                <Lock className="size-3.5" /> Password <span className="text-destructive">*</span>
-              </Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPw ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder={mode === "login" ? "Your password" : "At least 6 characters"}
-                  autoComplete={mode === "login" ? "current-password" : "new-password"}
-                  className="pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPw((v) => !v)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  aria-label={showPw ? "Hide password" : "Show password"}
+              {/* Logo + heading */}
+              <div className="mb-6 text-center">
+                <motion.div
+                  initial={{ scale: 0, rotate: -180 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={{ duration: 0.8, delay: 0.3, type: "spring" }}
+                  className="mx-auto mb-3 grid size-14 place-items-center rounded-2xl bg-gradient-to-br from-primary to-primary/80 shadow-lg"
                 >
-                  {showPw ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                </button>
-              </div>
-              {mode === "register" && (
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Use 6 or more characters.
+                  <Sprout className="size-7 text-primary-foreground" />
+                </motion.div>
+                <h1 className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-2xl font-bold tracking-tight text-transparent">
+                  {mode === "login" ? "Welcome Back" : "Create Account"}
+                </h1>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {mode === "login"
+                    ? "Sign in to access the FarmMart marketplace"
+                    : "Join FarmMart to buy, sell, and grow with AI"}
                 </p>
-              )}
-            </div>
+              </div>
 
-            {mode === "register" && (
-              <>
-                <div>
-                  <Label className="mb-1.5 block">I am a…</Label>
-                  <Select value={role} onValueChange={(v) => setRole(v as Role)}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {(Object.keys(ROLE_LABELS) as Role[]).map((r) => (
-                        <SelectItem key={r} value={r}>
-                          {ROLE_LABELS[r]}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <Field
-                    id="location"
-                    label="Location"
-                    icon={MapPin}
-                    value={location}
-                    onChange={setLocation}
-                    placeholder="City, State"
-                  />
-                  <Field
-                    id="phone"
-                    label="Phone"
-                    icon={Phone}
-                    value={phone}
-                    onChange={setPhone}
-                    placeholder="+91 …"
-                  />
-                </div>
-              </>
-            )}
-
-            <Button
-              type="submit"
-              className="w-full gap-2"
-              size="lg"
-              disabled={loading}
-            >
-              {loading ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : (
-                <>
-                  {mode === "login" ? "Sign In" : "Create Account"}
-                  <ArrowRight className="size-4" />
-                </>
-              )}
-            </Button>
-          </form>
-
-          {/* Switch mode link */}
-          <p className="mt-6 text-center text-sm text-muted-foreground">
-            {mode === "login" ? (
-              <>
-                New to FarmMart?{" "}
-                <button
-                  onClick={() => setMode("register")}
-                  className="font-medium text-primary hover:underline"
-                >
-                  Create an account
-                </button>
-              </>
-            ) : (
-              <>
-                Already have an account?{" "}
+              {/* Mode toggle */}
+              <div className="mb-6 inline-flex w-full rounded-xl border border-border bg-secondary/50 p-1">
                 <button
                   onClick={() => setMode("login")}
-                  className="font-medium text-primary hover:underline"
+                  className={cn(
+                    "flex-1 rounded-lg px-5 py-2 text-sm font-medium transition-all",
+                    mode === "login"
+                      ? "bg-background text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
                 >
-                  Sign in
+                  Sign In
                 </button>
-              </>
-            )}
-          </p>
+                <button
+                  onClick={() => setMode("register")}
+                  className={cn(
+                    "flex-1 rounded-lg px-5 py-2 text-sm font-medium transition-all",
+                    mode === "register"
+                      ? "bg-background text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  Sign Up
+                </button>
+              </div>
 
-          <div className="mt-6 flex items-center justify-center gap-2 text-xs text-muted-foreground">
-            <ShieldCheck className="size-3.5 text-primary" />
-            Your data is protected with secure encryption
-          </div>
-        </div>
+              <form onSubmit={submit} className="space-y-4">
+                {mode === "register" && (
+                  <Field
+                    id="name"
+                    label="Full name"
+                    icon={UserIcon}
+                    required
+                    value={name}
+                    onChange={setName}
+                    placeholder="e.g., Ravi Sharma"
+                    autoComplete="name"
+                  />
+                )}
+
+                <Field
+                  id="email"
+                  label="Email address"
+                  icon={Mail}
+                  required
+                  type="email"
+                  value={email}
+                  onChange={setEmail}
+                  placeholder="you@example.com"
+                  autoComplete="email"
+                />
+
+                <div>
+                  <Label htmlFor="password" className="mb-1.5 flex items-center gap-1">
+                    <Lock className="size-3.5" /> Password <span className="text-destructive">*</span>
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPw ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder={mode === "login" ? "Your password" : "At least 6 characters"}
+                      autoComplete={mode === "login" ? "current-password" : "new-password"}
+                      className="pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPw((v) => !v)}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      aria-label={showPw ? "Hide password" : "Show password"}
+                    >
+                      {showPw ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Remember me + Forgot password (login mode only) */}
+                {mode === "login" && (
+                  <div className="flex items-center justify-between">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <Checkbox
+                        checked={rememberMe}
+                        onCheckedChange={(c) => setRememberMe(c === true)}
+                      />
+                      <span className="text-sm text-muted-foreground">Remember me</span>
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => toast.info("Password reset link will be sent to your email")}
+                      className="text-sm font-medium text-primary hover:underline"
+                    >
+                      Forgot password?
+                    </button>
+                  </div>
+                )}
+
+                {mode === "register" && (
+                  <>
+                    <div>
+                      <Label className="mb-1.5 block">I am a…</Label>
+                      <Select value={role} onValueChange={(v) => setRole(v as Role)}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {(Object.keys(ROLE_LABELS) as Role[]).map((r) => (
+                            <SelectItem key={r} value={r}>
+                              {ROLE_LABELS[r]}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <Field
+                        id="location"
+                        label="Location"
+                        icon={MapPin}
+                        value={location}
+                        onChange={setLocation}
+                        placeholder="City, State"
+                      />
+                      <Field
+                        id="phone"
+                        label="Phone"
+                        icon={Phone}
+                        value={phone}
+                        onChange={setPhone}
+                        placeholder="+91 …"
+                      />
+                    </div>
+                  </>
+                )}
+
+                {/* Login button with glow */}
+                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                  <Button
+                    type="submit"
+                    className="w-full gap-2 shadow-lg transition-all hover:shadow-primary/30 hover:shadow-xl"
+                    size="lg"
+                    disabled={loading}
+                    style={{ boxShadow: "0 4px 20px -2px rgba(80,120,60,0.4)" }}
+                  >
+                    {loading ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      <>
+                        {mode === "login" ? "Sign In" : "Create Account"}
+                        <ArrowRight className="size-4" />
+                      </>
+                    )}
+                  </Button>
+                </motion.div>
+              </form>
+
+              {/* Divider */}
+              <div className="my-5 flex items-center gap-3">
+                <div className="h-px flex-1 bg-border/60" />
+                <span className="text-xs text-muted-foreground">or continue with</span>
+                <div className="h-px flex-1 bg-border/60" />
+              </div>
+
+              {/* Social login buttons */}
+              <div className="grid grid-cols-2 gap-3">
+                <motion.button
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => socialLogin("Google")}
+                  type="button"
+                  className="flex items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5 text-sm font-medium transition-all hover:bg-accent hover:shadow-md"
+                >
+                  <GoogleIcon />
+                  Google
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => socialLogin("GitHub")}
+                  type="button"
+                  className="flex items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5 text-sm font-medium transition-all hover:bg-accent hover:shadow-md"
+                >
+                  <GitHubIcon />
+                  GitHub
+                </motion.button>
+              </div>
+
+              {/* Switch mode */}
+              <p className="mt-6 text-center text-sm text-muted-foreground">
+                {mode === "login" ? (
+                  <>
+                    New to FarmMart?{" "}
+                    <button
+                      onClick={() => setMode("register")}
+                      className="font-medium text-primary hover:underline"
+                    >
+                      Create an account
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    Already have an account?{" "}
+                    <button
+                      onClick={() => setMode("login")}
+                      className="font-medium text-primary hover:underline"
+                    >
+                      Sign in
+                    </button>
+                  </>
+                )}
+              </p>
+
+              {/* Security footer */}
+              <div className="mt-5 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
+                <ShieldCheck className="size-3.5 text-primary" />
+                Your data is protected with 256-bit encryption
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
       </div>
 
       {/* === BOTTOM TAGLINE === */}
-      <div className="absolute bottom-0 left-0 z-10 w-full p-4 text-center">
-        <p className="text-sm font-medium text-white drop-shadow-md">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1, duration: 1 }}
+        className="absolute bottom-0 left-0 z-10 w-full p-4 text-center"
+      >
+        <p className="text-sm font-medium text-white drop-shadow-lg">
           From harvest to doorstep, powered by AI 🌾
         </p>
-      </div>
+      </motion.div>
     </div>
   );
 }
+
+// === Helper Components ===
 
 function Field({
   id,
@@ -619,7 +562,7 @@ function Bird({ size = 1, delay = 0 }: { size?: number; delay?: number }) {
       height={14 * size}
       viewBox="0 0 30 14"
       fill="none"
-      style={{ animation: `flap 0.5s ease-in-out infinite alternate`, animationDelay: `${delay}s` }}
+      style={{ animation: "flap 0.5s ease-in-out infinite alternate", animationDelay: `${delay}s` }}
     >
       <path
         d="M1 7 Q5 1 9 7 Q13 1 17 7 Q21 1 25 7 Q27 5 29 7"
@@ -633,14 +576,10 @@ function Bird({ size = 1, delay = 0 }: { size?: number; delay?: number }) {
   );
 }
 
-// Sunset-lit cloud SVG (golden edges, orange underside)
+// Sunset-lit cloud SVG
 function SunsetCloud({ size = 1 }: { size?: number }) {
   return (
-    <svg
-      width={120 * size}
-      height={60 * size}
-      viewBox="0 0 120 60"
-    >
+    <svg width={120 * size} height={60 * size} viewBox="0 0 120 60">
       <defs>
         <linearGradient id={`cloudGrad-${size}`} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="#ffd89b" />
@@ -652,6 +591,27 @@ function SunsetCloud({ size = 1 }: { size?: number }) {
       <ellipse cx="55" cy="30" rx="30" ry="22" fill={`url(#cloudGrad-${size})`} />
       <ellipse cx="85" cy="38" rx="28" ry="20" fill={`url(#cloudGrad-${size})`} />
       <ellipse cx="100" cy="44" rx="18" ry="14" fill={`url(#cloudGrad-${size})`} />
+    </svg>
+  );
+}
+
+// Google icon
+function GoogleIcon() {
+  return (
+    <svg className="size-4" viewBox="0 0 24 24">
+      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+    </svg>
+  );
+}
+
+// GitHub icon
+function GitHubIcon() {
+  return (
+    <svg className="size-4" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
     </svg>
   );
 }

@@ -210,3 +210,9 @@
   0% { transform: translateX(-30px); opacity: 0.6; }
   100% { transform: translateX(30px); opacity: 1; }
 }
+
+/* Floating dust particles */
+@keyframes floatParticle {
+  0%, 100% { transform: translateY(0) translateX(0); opacity: 0.3; }
+  50% { transform: translateY(-30px) translateX(10px); opacity: 0.8; }
+}
