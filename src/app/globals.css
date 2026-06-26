@@ -155,3 +155,40 @@
     linear-gradient(90deg, oklch(0.55 0.13 150 / 0.06) 1px, transparent 1px);
   background-size: 28px 28px;
 }
+
+/* === Login page animated farm scene === */
+
+/* Rising sun — gentle up/down float */
+@keyframes sunRise {
+  0% { transform: translateY(10px); }
+  100% { transform: translateY(-10px); }
+}
+
+/* Clouds drifting across the sky */
+@keyframes cloudDrift {
+  0% { transform: translateX(-200px); }
+  100% { transform: translateX(calc(100vw + 200px)); }
+}
+
+/* Bird flock 1 — flies across lower sky */
+@keyframes birdFly1 {
+  0% { transform: translate(-50px, 0); }
+  25% { transform: translate(25vw, -15px); }
+  50% { transform: translate(50vw, 5px); }
+  75% { transform: translate(75vw, -10px); }
+  100% { transform: translate(calc(100vw + 50px), 0); }
+}
+
+/* Bird flock 2 — flies across upper sky (different path) */
+@keyframes birdFly2 {
+  0% { transform: translate(-50px, 0); }
+  33% { transform: translate(33vw, 10px); }
+  66% { transform: translate(66vw, -8px); }
+  100% { transform: translate(calc(100vw + 50px), 0); }
+}
+
+/* Bird wing flap */
+@keyframes flap {
+  0% { transform: scaleY(1); }
+  100% { transform: scaleY(0.5); }
+}
