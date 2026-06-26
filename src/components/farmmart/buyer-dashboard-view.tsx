@@ -87,6 +87,7 @@ export function BuyerDashboard() {
       icon: Package,
       color: "text-primary",
       bg: "bg-primary/10",
+      onClick: () => setView("orders"),
     },
     {
       label: "Total Spent",
@@ -94,6 +95,7 @@ export function BuyerDashboard() {
       icon: IndianRupee,
       color: "text-green-600",
       bg: "bg-green-500/10",
+      onClick: () => setView("orders"),
     },
     {
       label: "Active Orders",
@@ -101,13 +103,15 @@ export function BuyerDashboard() {
       icon: ShoppingCart,
       color: "text-amber-600",
       bg: "bg-amber-500/10",
+      onClick: () => setView("orders"),
     },
     {
       label: "Items in Cart",
       value: String(cartItems),
-      icon: TrendingUp,
+      icon: ShoppingCart,
       color: "text-blue-600",
       bg: "bg-blue-500/10",
+      onClick: () => setView("cart"),
     },
   ];
 
@@ -118,6 +122,13 @@ export function BuyerDashboard() {
       icon: Store,
       view: "marketplace" as const,
       color: "bg-primary/10 text-primary",
+    },
+    {
+      label: "My Cart",
+      desc: `${cartItems} item${cartItems !== 1 ? "s" : ""} in your cart`,
+      icon: ShoppingCart,
+      view: "cart" as const,
+      color: "bg-blue-500/10 text-blue-600",
     },
     {
       label: "AI Crop Advisor",
@@ -131,13 +142,6 @@ export function BuyerDashboard() {
       desc: "7-day forecast with farming advisory",
       icon: CloudSun,
       view: "weather" as const,
-      color: "bg-blue-500/10 text-blue-600",
-    },
-    {
-      label: "Market Insights",
-      desc: "Live pricing trends and demand signals",
-      icon: TrendingUp,
-      view: "insights" as const,
       color: "bg-amber-500/10 text-amber-600",
     },
   ];
@@ -190,7 +194,11 @@ export function BuyerDashboard() {
         {kpis.map((k) => {
           const Icon = k.icon;
           return (
-            <Card key={k.label} className="p-4">
+            <Card
+              key={k.label}
+              className="p-4 cursor-pointer transition-all hover:border-primary/40 hover:shadow-md"
+              onClick={k.onClick}
+            >
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium text-muted-foreground">
                   {k.label}
