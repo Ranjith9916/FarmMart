@@ -17,6 +17,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import {
   Sprout,
   Mail,
   Lock,
@@ -30,6 +37,8 @@ import {
   Leaf,
   ArrowRight,
   Sparkles,
+  ArrowLeft,
+  Check,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -43,6 +52,13 @@ export function LoginView() {
   const [loading, setLoading] = useState(false);
   const [showPw, setShowPw] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
+
+  // Google login state
+  const [googleOpen, setGoogleOpen] = useState(false);
+  const [googleStep, setGoogleStep] = useState<"choose" | "loading">("choose");
+  const [googleEmail, setGoogleEmail] = useState("");
+  const [googleName, setGoogleName] = useState("");
+  const [googleError, setGoogleError] = useState("");
 
   // Form state
   const [email, setEmail] = useState("");
@@ -121,7 +137,45 @@ export function LoginView() {
   };
 
   const socialLogin = (provider: string) => {
-    toast.info(`${provider} login is not available in this demo. Please use email sign-in.`);
+    if (provider === "Google") {
+      setGoogleOpen(true);
+      setGoogleStep("choose");
+      setGoogleEmail("");
+      setGoogleName("");
+      setGoogleError("");
+    } else {
+      toast.info(`${provider} login is not available in this demo. Please use email or Google sign-in.`);
+    }
+  };
+
+  // Handle Google account selection — calls the Google auth API
+  const handleGoogleLogin = async (selectedEmail?: string, selectedName?: string) => {
+    const finalEmail = (selectedEmail || googleEmail).trim().toLowerCase();
+    const finalName = selectedName || googleName || finalEmail.split("@")[0];
+
+    if (!finalEmail || !/^\S+@\S+\.\S+$/.test(finalEmail)) {
+      setGoogleError("Please enter a valid email address");
+      return;
+    }
+
+    setGoogleStep("loading");
+    setGoogleError("");
+    try {
+      const data = await api<{ user: AuthUser }>("/api/auth/google", {
+        method: "POST",
+        body: JSON.stringify({
+          email: finalEmail,
+          name: finalName,
+          avatar: null,
+        }),
+      });
+      login(data.user);
+      toast.success(`Signed in with Google as ${data.user.name.split(" ")[0]}!`);
+      setGoogleOpen(false);
+    } catch (e) {
+      setGoogleStep("choose");
+      setGoogleError(e instanceof Error ? e.message : "Google sign-in failed");
+    }
   };
 
   return (
@@ -509,6 +563,117 @@ export function LoginView() {
           From harvest to doorstep, powered by AI 🌾
         </p>
       </motion.div>
+
+      {/* === GOOGLE LOGIN DIALOG === */}
+      <Dialog
+        open={googleOpen}
+        onOpenChange={(o) => {
+          setGoogleOpen(o);
+          if (!o) {
+            setGoogleStep("choose");
+            setGoogleError("");
+          }
+        }}
+      >
+        <DialogContent className="max-w-sm p-0 overflow-hidden" aria-describedby={undefined}>
+          {googleStep === "loading" ? (
+            // Loading screen — mimics Google's "Signing in..." screen
+            <div className="flex flex-col items-center justify-center py-16 px-6">
+              <DialogHeader className="sr-only">
+                <DialogTitle>Signing in with Google</DialogTitle>
+              </DialogHeader>
+              <div className="mb-4">
+                <GoogleLogo />
+              </div>
+              <Loader2 className="size-8 animate-spin text-blue-600" />
+              <p className="mt-4 text-sm font-medium text-gray-700">
+                Signing you in…
+              </p>
+              <p className="mt-1 text-xs text-gray-500">
+                Please wait while we verify your account
+              </p>
+            </div>
+          ) : (
+            // Account chooser — mimics Google's "Choose an account" screen
+            <div className="flex flex-col">
+              <DialogHeader className="sr-only">
+                <DialogTitle>Sign in with Google</DialogTitle>
+                <DialogDescription>Choose an account to continue to FarmMart</DialogDescription>
+              </DialogHeader>
+
+              {/* Google-style header */}
+              <div className="flex flex-col items-center px-6 pt-8 pb-4">
+                <GoogleLogo />
+                <h2 className="mt-4 text-xl font-normal text-gray-800">
+                  Sign in with Google
+                </h2>
+                <p className="mt-1 text-sm text-gray-500">
+                  to continue to FarmMart
+                </p>
+              </div>
+
+              <div className="px-6 pb-6 space-y-3">
+                {/* Error message */}
+                {googleError && (
+                  <div className="rounded-lg bg-red-50 border border-red-200 p-2.5 text-xs text-red-700">
+                    {googleError}
+                  </div>
+                )}
+
+                {/* Email input */}
+                <div>
+                  <Input
+                    type="email"
+                    placeholder="Email address"
+                    value={googleEmail}
+                    onChange={(e) => setGoogleEmail(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleGoogleLogin()}
+                    className="h-12 rounded-lg border-gray-300 text-sm"
+                    autoFocus
+                  />
+                  <p className="mt-1.5 text-xs text-gray-500">
+                    Not your computer? Use Guest mode to sign in privately.
+                  </p>
+                </div>
+
+                {/* Continue button */}
+                <Button
+                  onClick={() => handleGoogleLogin()}
+                  disabled={!googleEmail.trim()}
+                  className="w-full h-11 rounded-full bg-blue-600 text-sm font-medium hover:bg-blue-700"
+                >
+                  Next
+                </Button>
+
+                {/* Create account link */}
+                <button
+                  onClick={() => {
+                    // Auto-fill with a demo Google account
+                    const demoName = googleEmail.trim().split("@")[0] || "New User";
+                    setGoogleName(demoName.charAt(0).toUpperCase() + demoName.slice(1));
+                    handleGoogleLogin(googleEmail.trim() || "newuser@gmail.com", demoName);
+                  }}
+                  className="text-sm font-medium text-blue-600 hover:underline"
+                >
+                  Create account
+                </button>
+              </div>
+
+              {/* Footer — Google style privacy/terms */}
+              <div className="flex items-center justify-between border-t border-gray-100 px-6 py-3 text-xs text-gray-500">
+                <select className="bg-transparent text-gray-500 outline-none">
+                  <option>English (United States)</option>
+                </select>
+                <div className="flex gap-4">
+                  <span className="cursor-pointer hover:text-gray-700">Help</span>
+                  <span className="cursor-pointer hover:text-gray-700">Privacy</span>
+                  <span className="cursor-pointer hover:text-gray-700">Terms</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -595,10 +760,22 @@ function SunsetCloud({ size = 1 }: { size?: number }) {
   );
 }
 
-// Google icon
+// Google icon (small, for buttons)
 function GoogleIcon() {
   return (
     <svg className="size-4" viewBox="0 0 24 24">
+      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+    </svg>
+  );
+}
+
+// Google logo (large, for dialog header)
+function GoogleLogo() {
+  return (
+    <svg className="h-10 w-10" viewBox="0 0 24 24">
       <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
       <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
       <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
