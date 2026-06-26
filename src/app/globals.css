@@ -192,3 +192,21 @@
   0% { transform: scaleY(1); }
   100% { transform: scaleY(0.5); }
 }
+
+/* Setting sun glow — pulsing golden glow */
+@keyframes sunGlow {
+  0% {
+    box-shadow: 0 0 60px 20px rgba(255, 221, 0, 0.4);
+    transform: scale(1);
+  }
+  100% {
+    box-shadow: 0 0 80px 30px rgba(255, 221, 0, 0.6);
+    transform: scale(1.05);
+  }
+}
+
+/* Mist/fog drifting horizontally */
+@keyframes mistDrift {
+  0% { transform: translateX(-30px); opacity: 0.6; }
+  100% { transform: translateX(30px); opacity: 1; }
+}

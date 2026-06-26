@@ -101,139 +101,264 @@ export function LoginView() {
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden">
-      {/* === FULL-SCREEN ANIMATED FARM SCENE === */}
+      {/* === FULL-SCREEN ANIMATED SUNSET FARM SCENE === */}
       <div className="absolute inset-0" aria-hidden>
-        {/* SKY GRADIENT */}
-        <div className="absolute inset-0 bg-gradient-to-b from-orange-200 via-sky-300 to-sky-200" />
+        {/* SKY GRADIENT — deep blue to golden sunset */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(to bottom, #1a3a5f 0%, #2c5282 15%, #4a7abc 30%, #7ba8d8 45%, #f9c784 62%, #ff9a56 78%, #ffcc80 90%, #ffd89b 100%)",
+          }}
+        />
 
-        {/* RISING SUN */}
-        <div className="absolute left-1/2 top-[15%] -translate-x-1/2">
+        {/* SETTING SUN — lower right with golden glow */}
+        <div className="absolute right-[12%] top-[55%]">
+          {/* Large outer glow */}
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-            <div className="size-96 rounded-full bg-amber-300/40 blur-3xl animate-pulse" />
+            <div
+              className="size-72 rounded-full blur-3xl animate-pulse"
+              style={{ background: "rgba(255, 221, 0, 0.3)" }}
+            />
           </div>
+          {/* Inner glow */}
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-            <div className="size-56 rounded-full bg-amber-300/60 blur-2xl" />
+            <div
+              className="size-44 rounded-full blur-2xl"
+              style={{ background: "rgba(255, 200, 80, 0.5)" }}
+            />
           </div>
+          {/* Sun disc */}
           <div
-            className="relative size-40 rounded-full bg-gradient-to-b from-amber-300 to-orange-400 shadow-[0_0_100px_50px_rgba(251,191,36,0.4)]"
-            style={{ animation: "sunRise 8s ease-in-out infinite alternate" }}
+            className="relative size-28 rounded-full"
+            style={{
+              background: "radial-gradient(circle, #ffeb3b 0%, #ffdd00 40%, #ff9a56 100%)",
+              boxShadow: "0 0 60px 20px rgba(255, 221, 0, 0.5)",
+              animation: "sunGlow 6s ease-in-out infinite alternate",
+            }}
+          />
+          {/* Sun reflection rays */}
+          <div
+            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 size-96 rounded-full"
+            style={{
+              background:
+                "radial-gradient(circle, rgba(255,221,0,0.08) 0%, transparent 70%)",
+            }}
           />
         </div>
 
-        {/* CLOUDS */}
+        {/* CLOUDS — golden-lit sunset clouds */}
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute left-[5%] top-[10%] opacity-80" style={{ animation: "cloudDrift 40s linear infinite" }}>
-            <Cloud />
+          <div
+            className="absolute left-[8%] top-[12%] opacity-70"
+            style={{ animation: "cloudDrift 50s linear infinite" }}
+          >
+            <SunsetCloud />
           </div>
-          <div className="absolute right-[8%] top-[6%] opacity-70" style={{ animation: "cloudDrift 55s linear infinite", animationDelay: "-10s" }}>
-            <Cloud size={0.7} />
+          <div
+            className="absolute right-[20%] top-[8%] opacity-60"
+            style={{ animation: "cloudDrift 65s linear infinite", animationDelay: "-15s" }}
+          >
+            <SunsetCloud size={0.7} />
           </div>
-          <div className="absolute left-[40%] top-[18%] opacity-60" style={{ animation: "cloudDrift 60s linear infinite", animationDelay: "-25s" }}>
-            <Cloud size={0.6} />
+          <div
+            className="absolute left-[45%] top-[22%] opacity-50"
+            style={{ animation: "cloudDrift 70s linear infinite", animationDelay: "-30s" }}
+          >
+            <SunsetCloud size={0.6} />
           </div>
         </div>
 
-        {/* FLYING BIRDS */}
+        {/* FLYING BIRDS — V-formation, dark silhouettes */}
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute left-0 top-[28%]" style={{ animation: "birdFly1 25s linear infinite" }}>
+          {/* Flock 1 — lower sky */}
+          <div className="absolute left-0 top-[30%]" style={{ animation: "birdFly1 30s linear infinite" }}>
             <Bird />
           </div>
-          <div className="absolute left-0 top-[25%]" style={{ animation: "birdFly1 28s linear infinite", animationDelay: "-3s" }}>
+          <div className="absolute left-0 top-[27%]" style={{ animation: "birdFly1 33s linear infinite", animationDelay: "-2s" }}>
             <Bird size={0.7} delay={0.3} />
           </div>
-          <div className="absolute left-0 top-[31%]" style={{ animation: "birdFly1 30s linear infinite", animationDelay: "-6s" }}>
-            <Bird size={0.6} delay={0.6} />
+          <div className="absolute left-0 top-[33%]" style={{ animation: "birdFly1 35s linear infinite", animationDelay: "-5s" }}>
+            <Bird size={0.65} delay={0.6} />
           </div>
-          <div className="absolute left-0 top-[16%]" style={{ animation: "birdFly2 35s linear infinite", animationDelay: "-8s" }}>
+          <div className="absolute left-0 top-[29%]" style={{ animation: "birdFly1 32s linear infinite", animationDelay: "-8s" }}>
+            <Bird size={0.6} delay={0.9} />
+          </div>
+          {/* Flock 2 — higher sky, smaller */}
+          <div className="absolute left-0 top-[18%]" style={{ animation: "birdFly2 40s linear infinite", animationDelay: "-10s" }}>
             <Bird size={0.5} delay={0.2} />
           </div>
-          <div className="absolute left-0 top-[19%]" style={{ animation: "birdFly2 40s linear infinite", animationDelay: "-15s" }}>
+          <div className="absolute left-0 top-[21%]" style={{ animation: "birdFly2 45s linear infinite", animationDelay: "-20s" }}>
             <Bird size={0.45} delay={0.5} />
           </div>
-          <div className="absolute left-0 top-[14%]" style={{ animation: "birdFly2 38s linear infinite", animationDelay: "-22s" }}>
-            <Bird size={0.4} delay={0.8} />
+          <div className="absolute left-0 top-[16%]" style={{ animation: "birdFly2 42s linear infinite", animationDelay: "-28s" }}>
+            <Bird size={0.4} delay={0.7} />
           </div>
         </div>
 
-        {/* MOUNTAINS — back layer */}
-        <svg className="absolute bottom-[30%] left-0 w-full" viewBox="0 0 1200 200" preserveAspectRatio="none">
-          <path d="M0,200 L0,120 L100,60 L200,100 L320,40 L450,90 L580,30 L720,80 L850,50 L1000,90 L1100,40 L1200,80 L1200,200 Z" fill="rgba(120,130,160,0.4)" />
+        {/* MIST/FOG — drifting between mountain layers */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div
+            className="absolute left-0 bottom-[42%] h-16 w-full"
+            style={{
+              background:
+                "linear-gradient(to right, transparent, rgba(255,255,255,0.15) 30%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0.15) 70%, transparent)",
+              animation: "mistDrift 25s ease-in-out infinite alternate",
+            }}
+          />
+          <div
+            className="absolute left-0 bottom-[36%] h-12 w-full"
+            style={{
+              background:
+                "linear-gradient(to right, transparent, rgba(255,220,180,0.12) 40%, rgba(255,220,180,0.18) 60%, transparent)",
+              animation: "mistDrift 30s ease-in-out infinite alternate-reverse",
+              animationDelay: "-5s",
+            }}
+          />
+        </div>
+
+        {/* MOUNTAINS — back layer (distant, hazy pale blue) */}
+        <svg className="absolute bottom-[38%] left-0 w-full" viewBox="0 0 1200 200" preserveAspectRatio="none">
+          <path
+            d="M0,200 L0,120 Q100,80 200,100 T400,90 Q500,60 600,85 T800,75 Q900,50 1000,80 T1200,70 L1200,200 Z"
+            fill="#5a7a9a"
+            opacity="0.5"
+          />
         </svg>
 
-        {/* MOUNTAINS — mid layer */}
-        <svg className="absolute bottom-[24%] left-0 w-full" viewBox="0 0 1200 250" preserveAspectRatio="none">
+        {/* MOUNTAINS — mid layer (soft blue-gray, rolling) */}
+        <svg className="absolute bottom-[30%] left-0 w-full" viewBox="0 0 1200 250" preserveAspectRatio="none">
           <defs>
-            <linearGradient id="mountainMid" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#5b6b7a" />
-              <stop offset="60%" stopColor="#4a5a6a" />
-              <stop offset="100%" stopColor="#3a4a5a" />
+            <linearGradient id="mountainMid2" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#3a5a7a" />
+              <stop offset="100%" stopColor="#2d4a6a" />
             </linearGradient>
           </defs>
-          <path d="M0,250 L0,140 L80,50 L160,110 L260,30 L380,100 L500,20 L620,90 L740,40 L880,100 L1000,50 L1120,110 L1200,60 L1200,250 Z" fill="url(#mountainMid)" />
-          <path d="M260,30 L230,55 L250,50 L270,60 L290,45 Z M500,20 L470,50 L490,45 L510,55 L530,40 Z M740,40 L710,65 L730,60 L750,70 L770,55 Z" fill="rgba(255,255,255,0.7)" />
+          <path
+            d="M0,250 L0,150 Q80,100 160,130 Q240,80 320,110 Q400,70 480,100 Q560,60 640,95 Q720,75 800,105 Q880,70 960,100 Q1040,80 1120,110 Q1180,95 1200,105 L1200,250 Z"
+            fill="url(#mountainMid2)"
+            opacity="0.85"
+          />
         </svg>
 
-        {/* MOUNTAINS — front layer */}
-        <svg className="absolute bottom-[18%] left-0 w-full" viewBox="0 0 1200 200" preserveAspectRatio="none">
+        {/* MOUNTAINS — front layer (dark slate silhouettes, jagged peaks) */}
+        <svg className="absolute bottom-[22%] left-0 w-full" viewBox="0 0 1200 200" preserveAspectRatio="none">
           <defs>
-            <linearGradient id="mountainFront" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#3d4f5c" />
-              <stop offset="100%" stopColor="#2a3a47" />
+            <linearGradient id="mountainFront2" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#2d3e50" />
+              <stop offset="100%" stopColor="#1a2a3a" />
             </linearGradient>
           </defs>
-          <path d="M0,200 L0,100 L120,30 L250,90 L400,10 L560,80 L700,20 L860,90 L1020,30 L1200,80 L1200,200 Z" fill="url(#mountainFront)" />
-          <path d="M400,10 L370,40 L390,35 L410,45 L430,30 Z M700,20 L670,50 L690,45 L710,55 L730,40 Z" fill="rgba(255,255,255,0.8)" />
+          <path
+            d="M0,200 L0,120 L60,80 L120,110 L180,50 L240,90 L300,40 L360,85 L420,30 L480,75 L540,45 L600,90 L660,35 L720,80 L780,50 L840,95 L900,40 L960,85 L1020,55 L1080,90 L1140,45 L1200,80 L1200,200 Z"
+            fill="url(#mountainFront2)"
+          />
         </svg>
 
-        {/* FARMLAND — rolling hills */}
+        {/* RIVER — winding through the valley with reflection */}
+        <svg className="absolute bottom-[15%] left-0 w-full" viewBox="0 0 1200 100" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="riverGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#f9c784" stopOpacity="0.6" />
+              <stop offset="50%" stopColor="#4a90e2" stopOpacity="0.5" />
+              <stop offset="100%" stopColor="#2c5282" stopOpacity="0.4" />
+            </linearGradient>
+          </defs>
+          <path
+            d="M0,60 Q200,50 350,55 Q500,60 600,45 Q700,30 800,40 Q900,50 1000,35 Q1100,25 1200,40 L1200,100 L0,100 Z"
+            fill="url(#riverGrad)"
+            opacity="0.7"
+          />
+          {/* Shimmer lines on river */}
+          <g stroke="rgba(255,221,0,0.2)" strokeWidth="1" fill="none">
+            <path d="M100,65 Q300,58 500,62 T900,55" />
+            <path d="M200,72 Q400,65 600,68 T1000,62" />
+          </g>
+        </svg>
+
+        {/* FARMLAND — golden fields with crop rows */}
         <div className="absolute bottom-0 left-0 w-full">
-          <svg className="absolute bottom-[10%] left-0 w-full" viewBox="0 0 1200 120" preserveAspectRatio="none">
-            <path d="M0,120 L0,60 Q150,20 300,50 T600,40 T900,55 T1200,35 L1200,120 Z" fill="#5a9e3e" />
-          </svg>
-          <svg className="absolute bottom-[4%] left-0 w-full" viewBox="0 0 1200 100" preserveAspectRatio="none">
-            <path d="M0,100 L0,40 Q200,10 400,35 T800,25 T1200,40 L1200,100 Z" fill="#4a8e2e" />
-            <g stroke="rgba(255,255,255,0.15)" strokeWidth="2" fill="none">
-              <path d="M0,55 Q300,30 600,45 T1200,50" />
-              <path d="M0,65 Q300,40 600,55 T1200,60" />
-              <path d="M0,75 Q300,55 600,68 T1200,72" />
-              <path d="M0,85 Q300,68 600,80 T1200,84" />
-            </g>
-          </svg>
-          <svg className="absolute bottom-0 left-0 w-full" viewBox="0 0 1200 60" preserveAspectRatio="none">
+          {/* Back field — golden wheat */}
+          <svg className="absolute bottom-[6%] left-0 w-full" viewBox="0 0 1200 80" preserveAspectRatio="none">
             <defs>
-              <linearGradient id="fieldFront" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#3d7e22" />
-                <stop offset="100%" stopColor="#2d6e15" />
+              <linearGradient id="wheatField" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#ffd700" stopOpacity="0.8" />
+                <stop offset="100%" stopColor="#daa520" stopOpacity="0.9" />
               </linearGradient>
             </defs>
-            <path d="M0,60 L0,20 Q200,5 500,15 T1000,12 T1200,20 L1200,60 Z" fill="url(#fieldFront)" />
-            <g fill="rgba(255,220,100,0.5)">
-              {Array.from({ length: 30 }).map((_, i) => (
-                <ellipse key={i} cx={i * 42 + 10} cy={18 + (i % 3) * 4} rx="3" ry="8" />
+            <path d="M0,80 L0,30 Q200,20 400,28 T800,25 T1200,30 L1200,80 Z" fill="url(#wheatField)" />
+            {/* Wheat row lines */}
+            <g stroke="rgba(139,90,0,0.3)" strokeWidth="1.5" fill="none">
+              <path d="M0,40 Q300,33 600,38 T1200,40" />
+              <path d="M0,50 Q300,43 600,48 T1200,50" />
+              <path d="M0,60 Q300,55 600,58 T1200,60" />
+            </g>
+          </svg>
+          {/* Front field — green crops */}
+          <svg className="absolute bottom-0 left-0 w-full" viewBox="0 0 1200 50" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="greenField" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#2e8b57" />
+                <stop offset="100%" stopColor="#1a5f1a" />
+              </linearGradient>
+            </defs>
+            <path d="M0,50 L0,15 Q150,8 300,12 T600,10 T900,14 T1200,12 L1200,50 Z" fill="url(#greenField)" />
+            {/* Crop tufts */}
+            <g fill="rgba(255,215,0,0.4)">
+              {Array.from({ length: 35 }).map((_, i) => (
+                <ellipse key={i} cx={i * 35 + 8} cy={14 + (i % 3) * 3} rx="2.5" ry="6" />
               ))}
             </g>
           </svg>
         </div>
 
-        {/* Trees */}
-        <svg className="absolute bottom-[16%] left-[6%] size-20" viewBox="0 0 40 60" aria-hidden>
-          <rect x="17" y="35" width="6" height="20" fill="#5a3e2a" />
-          <circle cx="20" cy="25" r="14" fill="#3d7e22" />
-          <circle cx="12" cy="30" r="9" fill="#4a8e2e" />
-          <circle cx="28" cy="30" r="9" fill="#4a8e2e" />
+        {/* DIRT ROAD — winding path */}
+        <svg className="absolute bottom-[8%] left-[20%] w-[60%] h-32" viewBox="0 0 600 120" preserveAspectRatio="none" aria-hidden>
+          <path
+            d="M50,120 Q100,80 150,70 Q200,60 250,50 Q300,40 350,35 Q400,30 500,20"
+            stroke="#8b7355"
+            strokeWidth="12"
+            fill="none"
+            strokeLinecap="round"
+            opacity="0.6"
+          />
+          <path
+            d="M50,120 Q100,80 150,70 Q200,60 250,50 Q300,40 350,35 Q400,30 500,20"
+            stroke="#6b5d4f"
+            strokeWidth="2"
+            fill="none"
+            strokeLinecap="round"
+            opacity="0.4"
+            strokeDasharray="8 6"
+          />
         </svg>
-        <svg className="absolute bottom-[14%] right-[8%] size-24" viewBox="0 0 40 60" aria-hidden>
-          <rect x="17" y="35" width="6" height="20" fill="#5a3e2a" />
-          <circle cx="20" cy="22" r="16" fill="#3d7e22" />
-          <circle cx="10" cy="30" r="10" fill="#4a8e2e" />
-          <circle cx="30" cy="30" r="10" fill="#4a8e2e" />
+
+        {/* Trees — left side */}
+        <svg className="absolute bottom-[14%] left-[5%] size-16" viewBox="0 0 40 60" aria-hidden>
+          <rect x="17" y="38" width="5" height="18" fill="#654321" />
+          <circle cx="20" cy="28" r="13" fill="#1a5f1a" />
+          <circle cx="12" cy="32" r="8" fill="#2e8b57" />
+          <circle cx="28" cy="32" r="8" fill="#2e8b57" />
+        </svg>
+        <svg className="absolute bottom-[12%] left-[12%] size-12" viewBox="0 0 40 60" aria-hidden>
+          <rect x="17" y="38" width="5" height="18" fill="#654321" />
+          <circle cx="20" cy="26" r="12" fill="#1a5f1a" />
+          <circle cx="13" cy="32" r="7" fill="#2e8b57" />
+          <circle cx="27" cy="32" r="7" fill="#2e8b57" />
+        </svg>
+        {/* Trees — right side */}
+        <svg className="absolute bottom-[13%] right-[6%] size-20" viewBox="0 0 40 60" aria-hidden>
+          <rect x="17" y="35" width="6" height="20" fill="#654321" />
+          <circle cx="20" cy="25" r="15" fill="#1a5f1a" />
+          <circle cx="10" cy="32" r="10" fill="#2e8b57" />
+          <circle cx="30" cy="32" r="10" fill="#2e8b57" />
         </svg>
       </div>
 
       {/* === TOP BRAND BAR === */}
       <div className="absolute left-0 top-0 z-10 flex w-full items-center justify-between p-5 sm:p-6">
         <div className="flex items-center gap-2.5">
-          <div className="grid size-10 place-items-center rounded-xl bg-white/25 backdrop-blur-md shadow-lg">
+          <div className="grid size-10 place-items-center rounded-xl bg-white/20 backdrop-blur-md shadow-lg">
             <Sprout className="size-5 text-white" />
           </div>
           <div>
@@ -508,19 +633,25 @@ function Bird({ size = 1, delay = 0 }: { size?: number; delay?: number }) {
   );
 }
 
-// Cloud SVG
-function Cloud({ size = 1 }: { size?: number }) {
+// Sunset-lit cloud SVG (golden edges, orange underside)
+function SunsetCloud({ size = 1 }: { size?: number }) {
   return (
     <svg
       width={120 * size}
       height={60 * size}
       viewBox="0 0 120 60"
-      fill="white"
     >
-      <ellipse cx="30" cy="40" rx="25" ry="18" />
-      <ellipse cx="55" cy="30" rx="30" ry="22" />
-      <ellipse cx="85" cy="38" rx="28" ry="20" />
-      <ellipse cx="100" cy="44" rx="18" ry="14" />
+      <defs>
+        <linearGradient id={`cloudGrad-${size}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#ffd89b" />
+          <stop offset="60%" stopColor="#ffcc80" />
+          <stop offset="100%" stopColor="#ff9a56" />
+        </linearGradient>
+      </defs>
+      <ellipse cx="30" cy="40" rx="25" ry="18" fill={`url(#cloudGrad-${size})`} />
+      <ellipse cx="55" cy="30" rx="30" ry="22" fill={`url(#cloudGrad-${size})`} />
+      <ellipse cx="85" cy="38" rx="28" ry="20" fill={`url(#cloudGrad-${size})`} />
+      <ellipse cx="100" cy="44" rx="18" ry="14" fill={`url(#cloudGrad-${size})`} />
     </svg>
   );
 }
