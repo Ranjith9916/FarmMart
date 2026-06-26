@@ -20,7 +20,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Loader2, Leaf, Sprout, ImagePlus, Tag, IndianRupee } from "lucide-react";
+import { Loader2, Leaf, Sprout, ImagePlus, Tag, IndianRupee, Upload, X } from "lucide-react";
 import { toast } from "sonner";
 import { useStore } from "@/lib/store";
 
@@ -85,8 +85,48 @@ export function AddProductDialog({
 }: AddProductDialogProps) {
   const [form, setForm] = useState<ProductFormData>(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const authUser = useStore((s) => s.authUser);
   const farmerId = authUser?.id || "";
+
+  // Handle photo upload from device
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Client-side validation
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image file");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be smaller than 5MB");
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error((err as { error?: string }).error || "Upload failed");
+      }
+      const data = (await res.json()) as { imageUrl: string };
+      setForm((f) => ({ ...f, imageUrl: data.imageUrl }));
+      toast.success("Photo uploaded successfully");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setUploading(false);
+      // Reset the input so the same file can be selected again
+      e.target.value = "";
+    }
+  };
 
   // Populate the form when opening for edit, or reset when opening for create
   useEffect(() => {
@@ -266,20 +306,75 @@ export function AddProductDialog({
             </div>
           </div>
 
-          {/* Image URL */}
+          {/* Product photo — upload or URL */}
           <div>
             <label className="text-sm font-medium flex items-center gap-1">
-              <ImagePlus className="size-3.5" /> Image URL
+              <ImagePlus className="size-3.5" /> Product Photo
             </label>
-            <Input
-              value={form.imageUrl}
-              onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
-              placeholder="https://example.com/photo.jpg"
-              className="mt-1"
-            />
-            <p className="mt-1 text-xs text-muted-foreground">
-              Paste a direct image link. Leave blank to use a default placeholder.
-            </p>
+
+            {/* Image preview */}
+            {form.imageUrl && (
+              <div className="relative mt-2 inline-block">
+                <img
+                  src={form.imageUrl}
+                  alt="Product preview"
+                  className="h-32 w-32 rounded-lg border border-border object-cover"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).style.opacity = "0.3";
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setForm({ ...form, imageUrl: "" })}
+                  className="absolute -right-2 -top-2 grid size-6 place-items-center rounded-full bg-destructive text-white shadow-sm hover:bg-destructive/90"
+                  aria-label="Remove image"
+                >
+                  <X className="size-3.5" />
+                </button>
+              </div>
+            )}
+
+            {/* Upload button */}
+            <label
+              className={`mt-2 flex cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border p-4 text-sm font-medium transition-colors hover:border-primary/40 hover:bg-accent/40 ${
+                uploading ? "opacity-50" : ""
+              }`}
+            >
+              {uploading ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" />
+                  Uploading…
+                </>
+              ) : (
+                <>
+                  <Upload className="size-4 text-primary" />
+                  Upload photo from device
+                </>
+              )}
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handlePhotoUpload}
+                disabled={uploading}
+              />
+            </label>
+
+            {/* URL alternative */}
+            <div className="mt-2">
+              <label className="text-xs text-muted-foreground">
+                Or paste an image URL
+              </label>
+              <Input
+                value={form.imageUrl.startsWith("/uploads/") ? "" : form.imageUrl}
+                onChange={(e) =>
+                  setForm({ ...form, imageUrl: e.target.value })
+                }
+                placeholder="https://example.com/photo.jpg"
+                className="mt-1"
+                disabled={uploading}
+              />
+            </div>
           </div>
 
           {/* Location */}
