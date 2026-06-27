@@ -43,6 +43,7 @@ import {
 import { toast } from "sonner";
 import { useTheme } from "next-themes";
 import { ProfileEditDialog } from "./profile-edit-dialog";
+import { UserAvatar } from "./user-avatar";
 
 const NAV: { key: ViewKey; label: string; icon: typeof Sprout; roles: Role[] }[] = [
   { key: "dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["BUYER", "FARMER", "WHOLESALER", "TRANSPORTER"] },
@@ -272,17 +273,7 @@ export function Header() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="gap-1.5 pr-1.5">
-                {authUser?.avatar ? (
-                  <img
-                    src={authUser.avatar}
-                    alt={authUser.name}
-                    className="size-6 rounded-full object-cover"
-                  />
-                ) : (
-                  <div className="grid size-6 place-items-center rounded-full bg-primary text-[11px] font-bold text-primary-foreground">
-                    {initials}
-                  </div>
-                )}
+                <UserAvatar name={authUser?.name || "User"} avatar={authUser?.avatar} size="sm" />
                 <span className="hidden sm:inline max-w-[120px] truncate">
                   {authUser?.name?.split(" ")[0] || ROLE_LABELS[role]}
                 </span>
@@ -292,17 +283,7 @@ export function Header() {
             <DropdownMenuContent align="end" className="w-60">
               {/* Account header */}
               <DropdownMenuLabel className="flex items-center gap-2 py-2">
-                {authUser?.avatar ? (
-                  <img
-                    src={authUser.avatar}
-                    alt={authUser.name}
-                    className="size-8 rounded-full object-cover"
-                  />
-                ) : (
-                  <div className="grid size-8 place-items-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
-                    {initials}
-                  </div>
-                )}
+                <UserAvatar name={authUser?.name || "User"} avatar={authUser?.avatar} size="md" />
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-sm font-semibold">
                     {authUser?.name || "Guest"}

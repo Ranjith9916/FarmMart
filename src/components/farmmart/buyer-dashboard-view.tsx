@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useStore } from "@/lib/store";
 import { api, fmtINR, fmtDate } from "@/lib/api";
+import { UserAvatar } from "./user-avatar";
 import type { Order, Product } from "@/lib/types";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -183,17 +184,7 @@ export function BuyerDashboard() {
       {/* Welcome header */}
       <div className="mb-6 fm-field-bg rounded-2xl border border-border/60 p-6">
         <div className="flex items-center gap-4">
-          {authUser?.avatar ? (
-            <img
-              src={authUser.avatar}
-              alt={authUser.name}
-              className="size-14 rounded-full object-cover border-2 border-primary/20 shadow-sm"
-            />
-          ) : (
-            <div className="grid size-14 place-items-center rounded-full bg-primary text-lg font-bold text-primary-foreground shadow-sm">
-              {initials}
-            </div>
-          )}
+          <UserAvatar name={authUser?.name || "User"} avatar={authUser?.avatar} size="lg" />
           <div>
             <h1 className="text-2xl font-bold">
               Welcome back, {firstName}! 👋

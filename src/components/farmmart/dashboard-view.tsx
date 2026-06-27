@@ -38,6 +38,7 @@ import { toast } from "sonner";
 import { AddProductDialog } from "./add-product-dialog";
 import { BuyerDashboard } from "./buyer-dashboard-view";
 import { TransporterDashboard } from "./transporter-dashboard-view";
+import { UserAvatar } from "./user-avatar";
 
 const PIE_COLORS = [
   "oklch(0.55 0.13 150)",
@@ -199,17 +200,7 @@ function FarmDashboard() {
     <div className="mx-auto max-w-7xl px-4 sm:px-6 py-6">
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-4">
-          {authUser?.avatar ? (
-            <img
-              src={authUser.avatar}
-              alt={authUser.name}
-              className="size-14 rounded-full object-cover border-2 border-primary/20 shadow-sm"
-            />
-          ) : (
-            <div className="grid size-14 place-items-center rounded-full bg-primary text-lg font-bold text-primary-foreground shadow-sm">
-              {(authUser?.name || "U").split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase()}
-            </div>
-          )}
+          <UserAvatar name={authUser?.name || "User"} avatar={authUser?.avatar} size="lg" />
           <div>
             <h1 className="text-2xl font-bold">Farm Dashboard</h1>
             <p className="text-sm text-muted-foreground">
