@@ -29,9 +29,11 @@ import {
   UserCircle2,
   Search,
   Bell,
+  Sun,
+  Moon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { AddProductDialog } from "./add-product-dialog";
 import {
   Popover,
@@ -39,6 +41,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { toast } from "sonner";
+import { useTheme } from "next-themes";
 
 const NAV: { key: ViewKey; label: string; icon: typeof Sprout; roles: Role[] }[] = [
   { key: "dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["BUYER", "FARMER", "WHOLESALER", "TRANSPORTER"] },
@@ -56,6 +59,13 @@ export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [sellOpen, setSellOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
+  const { theme, setTheme } = useTheme();
+  // Avoid hydration mismatch for theme toggle — returns false on server, true on client
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
 
   // Click a notification → navigate to the relevant page + close the popover
   const handleNotifClick = (target: ViewKey, message: string) => {
@@ -129,6 +139,25 @@ export function Header() {
             <Search className="size-4" />
             <span className="truncate">Search products, crops…</span>
           </button>
+
+          {/* Dark mode toggle */}
+          {mounted && (
+            <button
+              onClick={() => {
+                const next = theme === "dark" ? "light" : "dark";
+                setTheme(next);
+                toast.success(next === "dark" ? "Dark mode enabled" : "Light mode enabled");
+              }}
+              className="grid size-8 place-items-center rounded-lg hover:bg-accent transition-colors"
+              aria-label="Toggle theme"
+            >
+              {theme === "dark" ? (
+                <Sun className="size-4" />
+              ) : (
+                <Moon className="size-4" />
+              )}
+            </button>
+          )}
 
           {/* Notifications bell */}
           <Popover open={notifOpen} onOpenChange={setNotifOpen}>

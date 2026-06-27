@@ -6,18 +6,25 @@ import { fmtINR } from "@/lib/api";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Star, MapPin, Leaf, Package, ShoppingCart, Truck } from "lucide-react";
+import { Star, MapPin, Leaf, Package, ShoppingCart, Truck, Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 export function ProductCard({ product }: { product: Product }) {
-  const { setActiveProduct, addToCart } = useStore();
+  const { setActiveProduct, addToCart, wishlist, toggleWishlist, addRecentlyViewed } = useStore();
   const lowStock = product.stock < 200 && product.stock > 0;
   const outOfStock = product.stock <= 0;
+  const isFav = wishlist.includes(product.id);
+
+  const handleCardClick = () => {
+    addRecentlyViewed(product.id);
+    setActiveProduct(product.id);
+  };
 
   return (
     <Card
       className="group relative flex flex-col overflow-hidden p-0 transition-all hover:shadow-lg hover:-translate-y-0.5 cursor-pointer"
-      onClick={() => setActiveProduct(product.id)}
+      onClick={handleCardClick}
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-muted">
         <img
@@ -46,13 +53,32 @@ export function ProductCard({ product }: { product: Product }) {
             {product.category}
           </Badge>
         </div>
-        {lowStock && (
-          <Badge className="absolute right-2 top-2 bg-amber-500 text-white shadow-sm">
+
+        {/* Wishlist heart button */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            toggleWishlist(product.id);
+            toast.success(isFav ? "Removed from wishlist" : "Added to wishlist");
+          }}
+          className={cn(
+            "absolute right-2 top-2 grid size-8 place-items-center rounded-full backdrop-blur-md transition-all",
+            isFav
+              ? "bg-white/90 text-red-500"
+              : "bg-black/30 text-white opacity-0 group-hover:opacity-100"
+          )}
+          aria-label="Toggle wishlist"
+        >
+          <Heart className={cn("size-4", isFav && "fill-red-500")} />
+        </button>
+
+        {lowStock && !isFav && (
+          <Badge className="absolute right-2 top-2 bg-amber-500 text-white shadow-sm group-hover:opacity-0 transition-opacity">
             Low stock
           </Badge>
         )}
-        {outOfStock && (
-          <Badge className="absolute right-2 top-2 bg-destructive text-white shadow-sm">
+        {outOfStock && !isFav && (
+          <Badge className="absolute right-2 top-2 bg-destructive text-white shadow-sm group-hover:opacity-0 transition-opacity">
             Out of stock
           </Badge>
         )}

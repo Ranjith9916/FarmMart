@@ -58,8 +58,9 @@ const DEFAULT_FILTERS: Filters = {
 };
 
 export function MarketplaceView() {
-  const { role } = useStore();
+  const { role, wishlist, recentlyViewed, setActiveProduct, addRecentlyViewed } = useStore();
   const [products, setProducts] = useState<Product[]>([]);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
@@ -79,6 +80,10 @@ export function MarketplaceView() {
         `/api/products?${params.toString()}`
       );
       setProducts(data.products);
+      // Store all products for wishlist/recently-viewed lookups
+      if (filters.sort === "popular" && !filters.q && filters.category === "All") {
+        setAllProducts(data.products);
+      }
     } catch {
       setProducts([]);
     } finally {
@@ -281,6 +286,75 @@ export function MarketplaceView() {
               )}
             </p>
           </div>
+
+          {/* Wishlist section */}
+          {!loading && wishlist.length > 0 && allProducts.length > 0 && (
+            (() => {
+              const wishProducts = allProducts.filter((p) => wishlist.includes(p.id));
+              if (wishProducts.length === 0) return null;
+              return (
+                <div className="mb-6">
+                  <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold">
+                    <span className="text-red-500">♥</span> Your Wishlist ({wishProducts.length})
+                  </h2>
+                  <div className="fm-scroll flex gap-3 overflow-x-auto pb-2">
+                    {wishProducts.map((p) => (
+                      <div
+                        key={p.id}
+                        className="w-44 shrink-0 cursor-pointer"
+                        onClick={() => {
+                          addRecentlyViewed(p.id);
+                          setActiveProduct(p.id);
+                        }}
+                      >
+                        <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-muted">
+                          <img src={p.imageUrl} alt={p.name} className="size-full object-cover" />
+                        </div>
+                        <div className="mt-1.5 text-xs font-semibold truncate">{p.name}</div>
+                        <div className="text-xs text-primary font-bold">{fmtINR(p.price)}/{p.unit}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()
+          )}
+
+          {/* Recently viewed section */}
+          {!loading && recentlyViewed.length > 0 && allProducts.length > 0 && (
+            (() => {
+              const recentProducts = recentlyViewed
+                .map((id) => allProducts.find((p) => p.id === id))
+                .filter(Boolean)
+                .slice(0, 6) as Product[];
+              if (recentProducts.length === 0) return null;
+              return (
+                <div className="mb-6">
+                  <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold">
+                    Recently Viewed
+                  </h2>
+                  <div className="fm-scroll flex gap-3 overflow-x-auto pb-2">
+                    {recentProducts.map((p) => (
+                      <div
+                        key={p.id}
+                        className="w-44 shrink-0 cursor-pointer"
+                        onClick={() => {
+                          addRecentlyViewed(p.id);
+                          setActiveProduct(p.id);
+                        }}
+                      >
+                        <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-muted">
+                          <img src={p.imageUrl} alt={p.name} className="size-full object-cover" />
+                        </div>
+                        <div className="mt-1.5 text-xs font-semibold truncate">{p.name}</div>
+                        <div className="text-xs text-primary font-bold">{fmtINR(p.price)}/{p.unit}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()
+          )}
 
           {loading ? (
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">

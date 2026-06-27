@@ -41,6 +41,14 @@ interface FarmMartState {
   activeProductId: string | null;
   setActiveProduct: (id: string | null) => void;
 
+  // Wishlist / favorites
+  wishlist: string[];
+  toggleWishlist: (productId: string) => void;
+
+  // Recently viewed products
+  recentlyViewed: string[];
+  addRecentlyViewed: (productId: string) => void;
+
   // search/filter state
   query: string;
   setQuery: (q: string) => void;
@@ -107,6 +115,23 @@ export const useStore = create<FarmMartState>()(
       activeProductId: null,
       setActiveProduct: (id) => set({ activeProductId: id }),
 
+      wishlist: [],
+      toggleWishlist: (productId) =>
+        set((state) => ({
+          wishlist: state.wishlist.includes(productId)
+            ? state.wishlist.filter((id) => id !== productId)
+            : [...state.wishlist, productId],
+        })),
+
+      recentlyViewed: [],
+      addRecentlyViewed: (productId) =>
+        set((state) => ({
+          recentlyViewed: [
+            productId,
+            ...state.recentlyViewed.filter((id) => id !== productId),
+          ].slice(0, 10),
+        })),
+
       query: "",
       setQuery: (q) => set({ query: q }),
     }),
@@ -118,6 +143,8 @@ export const useStore = create<FarmMartState>()(
         role: state.role,
         view: state.view,
         cart: state.cart,
+        wishlist: state.wishlist,
+        recentlyViewed: state.recentlyViewed,
       }),
     }
   )
