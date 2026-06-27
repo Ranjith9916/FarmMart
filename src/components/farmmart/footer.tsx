@@ -58,34 +58,6 @@ export function Footer() {
           ))}
         </div>
 
-        {/* === Traction Stats === */}
-        <div className="mb-8 rounded-xl border border-border/60 bg-background p-4">
-          <div className="mb-3 flex items-center gap-2">
-            <TrendingUp className="size-4 text-primary" />
-            <h4 className="text-sm font-semibold">Platform Traction</h4>
-            <Badge variant="secondary" className="text-[9px]">
-              <span className="mr-1 size-1.5 animate-pulse rounded-full bg-green-500" />
-              Live
-            </Badge>
-          </div>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-6">
-            {[
-              { label: "GTV (Annualized)", value: "₹4.2 Cr", sub: "Gross Transaction Value" },
-              { label: "Active Users", value: "12,400+", sub: "Farmers + Buyers" },
-              { label: "Orders / Month", value: "3,800+", sub: "Growing 22% MoM" },
-              { label: "Verified Farmers", value: "2,100+", sub: "Across 12 states" },
-              { label: "Avg. Order Value", value: "₹1,850", sub: "Higher than industry" },
-              { label: "Retention Rate", value: "68%", sub: "Monthly active" },
-            ].map((s) => (
-              <div key={s.label}>
-                <div className="text-lg font-bold text-primary">{s.value}</div>
-                <div className="text-[10px] font-medium">{s.label}</div>
-                <div className="text-[9px] text-muted-foreground">{s.sub}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-
         {/* === Footer Links === */}
         <div className="grid gap-6 md:grid-cols-4">
           <div className="md:col-span-2">
