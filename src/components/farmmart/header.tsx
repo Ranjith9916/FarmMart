@@ -27,10 +27,17 @@ import {
   PlusCircle,
   LogOut,
   UserCircle2,
+  Search,
+  Bell,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { AddProductDialog } from "./add-product-dialog";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 const NAV: { key: ViewKey; label: string; icon: typeof Sprout; roles: Role[] }[] = [
   { key: "dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["BUYER", "FARMER", "WHOLESALER", "TRANSPORTER"] },
@@ -105,6 +112,95 @@ export function Header() {
         </nav>
 
         <div className="ml-auto flex items-center gap-2">
+          {/* Global search bar (desktop) */}
+          <button
+            onClick={() => setView("marketplace")}
+            className="hidden md:flex items-center gap-2 rounded-lg border border-border/60 bg-secondary/50 px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground w-48 lg:w-56"
+          >
+            <Search className="size-4" />
+            <span className="truncate">Search products, crops…</span>
+          </button>
+
+          {/* Notifications bell */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <button className="relative grid size-8 place-items-center rounded-lg hover:bg-accent transition-colors" aria-label="Notifications">
+                <Bell className="size-4" />
+                <span className="absolute right-1 top-1 size-2 rounded-full bg-destructive" />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-80 p-0">
+              <div className="border-b border-border/60 p-3">
+                <h3 className="text-sm font-semibold">Notifications</h3>
+              </div>
+              <div className="max-h-80 overflow-y-auto fm-scroll">
+                {role === "FARMER" || role === "WHOLESALER" ? (
+                  <>
+                    <NotifItem
+                      title="New order received"
+                      desc="You have a new order waiting to be confirmed"
+                      time="2 min ago"
+                      color="bg-primary"
+                    />
+                    <NotifItem
+                      title="Low stock alert"
+                      desc="Fresh Organic Tomatoes is running low (5 kg left)"
+                      time="1 hour ago"
+                      color="bg-amber-500"
+                    />
+                    <NotifItem
+                      title="Price update"
+                      desc="Market price for Grains has increased by 8%"
+                      time="3 hours ago"
+                      color="bg-green-500"
+                    />
+                  </>
+                ) : role === "TRANSPORTER" ? (
+                  <>
+                    <NotifItem
+                      title="New delivery assigned"
+                      desc="Order FM-30579006 is ready for pickup"
+                      time="5 min ago"
+                      color="bg-primary"
+                    />
+                    <NotifItem
+                      title="Route optimized"
+                      desc="Your delivery route has been updated"
+                      time="30 min ago"
+                      color="bg-blue-500"
+                    />
+                  </>
+                ) : (
+                  <>
+                    <NotifItem
+                      title="Order confirmed"
+                      desc="Your order has been confirmed by the farmer"
+                      time="10 min ago"
+                      color="bg-primary"
+                    />
+                    <NotifItem
+                      title="Price drop alert"
+                      desc="Fresh Green Spinach price dropped by 12%"
+                      time="2 hours ago"
+                      color="bg-green-500"
+                    />
+                    <NotifItem
+                      title="Weather advisory"
+                      desc="Heavy rain expected tomorrow — plan your purchases"
+                      time="5 hours ago"
+                      color="bg-amber-500"
+                    />
+                  </>
+                )}
+              </div>
+              <div className="border-t border-border/60 p-2 text-center">
+                <button className="text-xs font-medium text-primary hover:underline">
+                  Mark all as read
+                </button>
+              </div>
+            </PopoverContent>
+          </Popover>
+
           {/* Sell / List product — prominent CTA for farmers & wholesalers */}
           {canSell && (
             <Button
@@ -236,5 +332,28 @@ export function Header() {
         />
       )}
     </header>
+  );
+}
+
+function NotifItem({
+  title,
+  desc,
+  time,
+  color,
+}: {
+  title: string;
+  desc: string;
+  time: string;
+  color: string;
+}) {
+  return (
+    <div className="flex gap-3 border-b border-border/40 p-3 hover:bg-accent/30 transition-colors cursor-pointer">
+      <div className={`mt-0.5 size-2 shrink-0 rounded-full ${color}`} />
+      <div className="min-w-0 flex-1">
+        <div className="text-sm font-medium">{title}</div>
+        <div className="text-xs text-muted-foreground line-clamp-2">{desc}</div>
+        <div className="mt-0.5 text-[10px] text-muted-foreground/70">{time}</div>
+      </div>
+    </div>
   );
 }

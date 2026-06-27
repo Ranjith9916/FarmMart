@@ -122,6 +122,12 @@
   body {
     @apply bg-background text-foreground;
   }
+  /* Add bottom padding on mobile for the bottom nav bar */
+  @media (max-width: 1023px) {
+    main {
+      padding-bottom: 3.5rem;
+    }
+  }
 }
 
 /* Custom scrollbar for long lists */

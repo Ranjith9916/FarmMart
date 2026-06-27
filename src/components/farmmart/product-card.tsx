@@ -6,7 +6,7 @@ import { fmtINR } from "@/lib/api";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Star, MapPin, Leaf, Package, ShoppingCart } from "lucide-react";
+import { Star, MapPin, Leaf, Package, ShoppingCart, Truck } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function ProductCard({ product }: { product: Product }) {
@@ -84,6 +84,10 @@ export function ProductCard({ product }: { product: Product }) {
             <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
               <MapPin className="size-3" />
               {product.location}
+            </div>
+            <div className="flex items-center gap-1 text-[10px] text-muted-foreground/70">
+              <Truck className="size-2.5" />
+              Delivers in 2-3 days
             </div>
           </div>
           <Button

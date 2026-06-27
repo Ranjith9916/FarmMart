@@ -1,8 +1,10 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { useStore, useHydrated } from "@/lib/store";
 import { Header } from "@/components/farmmart/header";
 import { Footer } from "@/components/farmmart/footer";
+import { MobileNav } from "@/components/farmmart/mobile-nav";
 import { LoginView } from "@/components/farmmart/login-view";
 import { MarketplaceView } from "@/components/farmmart/marketplace-view";
 import { ProductDetailDialog } from "@/components/farmmart/product-detail-dialog";
@@ -13,14 +15,21 @@ import { AdvisorView } from "@/components/farmmart/advisor-view";
 import { WeatherView } from "@/components/farmmart/weather-view";
 import { InsightsView } from "@/components/farmmart/insights-view";
 import { Loader2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function Home() {
   const { authed, view } = useStore();
   const hydrated = useHydrated();
+  const mainRef = useRef<HTMLElement>(null);
 
-  // Wait for the persisted store to hydrate before rendering anything.
-  // This prevents the role/view from flashing to defaults (BUYER/marketplace)
-  // on refresh, which caused farmers to see the buyer dashboard.
+  // Scroll to top when view changes
+  useEffect(() => {
+    if (mainRef.current) {
+      mainRef.current.scrollTo({ top: 0, behavior: "smooth" });
+    }
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [view]);
+
   if (!hydrated) {
     return (
       <div className="grid min-h-screen place-items-center">
@@ -29,26 +38,35 @@ export default function Home() {
     );
   }
 
-  // Not authenticated — show the login / signup page (no header/footer)
   if (!authed) {
     return <LoginView />;
   }
 
-  // Authenticated — show the full app shell
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
-      <main className="flex-1">
-        {view === "marketplace" && <MarketplaceView />}
-        {view === "cart" && <CartView />}
-        {view === "orders" && <OrdersView />}
-        {view === "dashboard" && <DashboardView />}
-        {view === "advisor" && <AdvisorView />}
-        {view === "weather" && <WeatherView />}
-        {view === "insights" && <InsightsView />}
+      <main ref={mainRef} className="flex-1">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={view}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+          >
+            {view === "marketplace" && <MarketplaceView />}
+            {view === "cart" && <CartView />}
+            {view === "orders" && <OrdersView />}
+            {view === "dashboard" && <DashboardView />}
+            {view === "advisor" && <AdvisorView />}
+            {view === "weather" && <WeatherView />}
+            {view === "insights" && <InsightsView />}
+          </motion.div>
+        </AnimatePresence>
       </main>
       <Footer />
       <ProductDetailDialog />
+      <MobileNav />
     </div>
   );
 }
