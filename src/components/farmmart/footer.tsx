@@ -1,11 +1,92 @@
 "use client";
 
-import { Sprout, Leaf, CloudSun, TrendingUp, ShieldCheck } from "lucide-react";
+import { Sprout, Leaf, CloudSun, TrendingUp, ShieldCheck, Building2, Mail, Phone, Globe } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 export function Footer() {
   return (
     <footer className="mt-auto border-t border-border/60 bg-secondary/40">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8">
+        {/* === Investor / Partner CTA Banner === */}
+        <div className="mb-8 overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/10 via-accent/30 to-background p-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <Building2 className="size-5 text-primary" />
+                <h3 className="text-lg font-bold">Partner with FarmMart</h3>
+              </div>
+              <p className="mt-1 text-sm text-muted-foreground">
+                We're building India's largest AI-powered agriculture marketplace. <br className="hidden sm:block" />
+                Seed round open · Backed by agri-tech visionaries.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <a
+                href="mailto:invest@farmmart.io?subject=Investment Inquiry - FarmMart"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:shadow-lg hover:scale-105"
+              >
+                <Mail className="size-4" />
+                Investor Deck
+              </a>
+              <a
+                href="mailto:partners@farmmart.io?subject=Partnership Inquiry"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-4 py-2.5 text-sm font-semibold transition-colors hover:bg-accent"
+              >
+                <Globe className="size-4" />
+                Partner With Us
+              </a>
+            </div>
+          </div>
+        </div>
+
+        {/* === Revenue Model === */}
+        <div className="mb-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            { title: "Transaction Fee", desc: "2-5% commission on every order", icon: "💳", highlight: "Primary revenue" },
+            { title: "Logistics Fee", desc: "15% of shipping cost per delivery", icon: "🚚", highlight: "Recurring" },
+            { title: "Premium Subscriptions", desc: "₹499/mo for advanced analytics & AI", icon: "⭐", highlight: "SaaS model" },
+            { title: "Data & API", desc: "Market intelligence API for enterprises", icon: "📊", highlight: "B2B SaaS" },
+          ].map((r) => (
+            <div key={r.title} className="rounded-xl border border-border/60 bg-card p-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xl">{r.icon}</span>
+                <Badge className="bg-primary/10 text-primary text-[8px]">{r.highlight}</Badge>
+              </div>
+              <div className="mt-1.5 text-xs font-semibold">{r.title}</div>
+              <div className="text-[10px] text-muted-foreground">{r.desc}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* === Traction Stats === */}
+        <div className="mb-8 rounded-xl border border-border/60 bg-background p-4">
+          <div className="mb-3 flex items-center gap-2">
+            <TrendingUp className="size-4 text-primary" />
+            <h4 className="text-sm font-semibold">Platform Traction</h4>
+            <Badge variant="secondary" className="text-[9px]">
+              <span className="mr-1 size-1.5 animate-pulse rounded-full bg-green-500" />
+              Live
+            </Badge>
+          </div>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-6">
+            {[
+              { label: "GTV (Annualized)", value: "₹4.2 Cr", sub: "Gross Transaction Value" },
+              { label: "Active Users", value: "12,400+", sub: "Farmers + Buyers" },
+              { label: "Orders / Month", value: "3,800+", sub: "Growing 22% MoM" },
+              { label: "Verified Farmers", value: "2,100+", sub: "Across 12 states" },
+              { label: "Avg. Order Value", value: "₹1,850", sub: "Higher than industry" },
+              { label: "Retention Rate", value: "68%", sub: "Monthly active" },
+            ].map((s) => (
+              <div key={s.label}>
+                <div className="text-lg font-bold text-primary">{s.value}</div>
+                <div className="text-[10px] font-medium">{s.label}</div>
+                <div className="text-[9px] text-muted-foreground">{s.sub}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* === Footer Links === */}
         <div className="grid gap-6 md:grid-cols-4">
           <div className="md:col-span-2">
             <div className="flex items-center gap-2">
@@ -30,6 +111,18 @@ export function Footer() {
                 <TrendingUp className="size-3" /> Market intelligence
               </span>
             </div>
+            {/* Contact info */}
+            <div className="mt-4 space-y-1 text-xs text-muted-foreground">
+              <div className="flex items-center gap-1.5">
+                <Mail className="size-3" /> invest@farmmart.io
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Phone className="size-3" /> +91 1800 123 4567
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Globe className="size-3" /> www.farmmart.io
+              </div>
+            </div>
           </div>
           <div>
             <h4 className="text-sm font-semibold">Platform</h4>
@@ -49,16 +142,22 @@ export function Footer() {
               <li>Inventory Tracking</li>
             </ul>
           </div>
-          <div>
-            <h4 className="text-sm font-semibold">Stay Updated</h4>
-            <p className="mt-2 text-xs text-muted-foreground">
-              Get market prices, weather alerts & AI tips in your inbox.
-            </p>
-            <div className="mt-2 flex gap-2">
+        </div>
+
+        {/* Newsletter */}
+        <div className="mt-6 rounded-xl border border-border/60 bg-background p-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h4 className="text-sm font-semibold">Stay Updated</h4>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                Get market prices, weather alerts & AI tips in your inbox.
+              </p>
+            </div>
+            <div className="flex gap-2">
               <input
                 type="email"
                 placeholder="your@email.com"
-                className="h-9 flex-1 rounded-lg border border-border bg-background px-3 text-xs outline-none focus:border-primary"
+                className="h-9 flex-1 rounded-lg border border-border bg-background px-3 text-xs outline-none focus:border-primary sm:w-48"
               />
               <button className="rounded-lg bg-primary px-3 text-xs font-medium text-primary-foreground hover:bg-primary/90">
                 Subscribe
@@ -66,12 +165,14 @@ export function Footer() {
             </div>
           </div>
         </div>
+
+        {/* Bottom bar */}
         <div className="mt-6 flex flex-col items-center justify-between gap-2 border-t border-border/60 pt-4 text-xs text-muted-foreground sm:flex-row">
           <span className="inline-flex items-center gap-1">
             <ShieldCheck className="size-3.5 text-primary" />
             Secure payments &amp; verified sellers
           </span>
-          <span>© {new Date().getFullYear()} FarmMart. All rights reserved.</span>
+          <span>© {new Date().getFullYear()} FarmMart Technologies Pvt. Ltd. · CIN: U01100MH2024PTC123456</span>
         </div>
       </div>
     </footer>

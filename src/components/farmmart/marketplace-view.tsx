@@ -221,6 +221,23 @@ export function MarketplaceView() {
         </div>
       </section>
 
+      {/* Market Opportunity Banner — investor-ready */}
+      <section className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {[
+          { value: "$350B", label: "India Agri Market", sub: "Total addressable market", icon: "🌍", color: "text-primary" },
+          { value: "$24B", label: "Agri-tech TAM", sub: "Serviceable market by 2030", icon: "📈", color: "text-green-600" },
+          { value: "150M+", label: "Indian Farmers", sub: "Largest farmer base globally", icon: "🌾", color: "text-amber-600" },
+          { value: "22%", label: "YoY Growth", sub: "Agri-tech adoption rate", icon: "🚀", color: "text-blue-600" },
+        ].map((s) => (
+          <div key={s.label} className="rounded-xl border border-border/60 bg-card p-4 text-center">
+            <div className="text-2xl">{s.icon}</div>
+            <div className={`mt-1 text-2xl font-bold ${s.color}`}>{s.value}</div>
+            <div className="text-xs font-semibold">{s.label}</div>
+            <div className="text-[10px] text-muted-foreground">{s.sub}</div>
+          </div>
+        ))}
+      </section>
+
       {/* Deal of the Day */}
       {!loading && products.length > 0 && (
         <DealOfTheDay products={products} setActiveProduct={setActiveProduct} addRecentlyViewed={addRecentlyViewed} />
