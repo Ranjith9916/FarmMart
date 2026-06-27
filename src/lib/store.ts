@@ -9,6 +9,14 @@ export interface AuthUser {
   email: string;
   role: Role;
   location?: string | null;
+  phone?: string | null;
+  avatar?: string | null;
+  // Transporter-specific
+  vehicleType?: string | null;
+  vehicleNumber?: string | null;
+  licenseNumber?: string | null;
+  capacity?: string | null;
+  transportArea?: string | null;
 }
 
 interface FarmMartState {
@@ -17,6 +25,7 @@ interface FarmMartState {
   authUser: AuthUser | null;
   login: (user: AuthUser) => void;
   logout: () => void;
+  updateAuthUser: (patch: Partial<AuthUser>) => void;
 
   // UI
   view: ViewKey;
@@ -61,6 +70,10 @@ export const useStore = create<FarmMartState>()(
       authUser: null,
       login: (user) =>
         set({ authed: true, authUser: user, role: user.role, view: "dashboard" }),
+      updateAuthUser: (patch) =>
+        set((state) => ({
+          authUser: state.authUser ? { ...state.authUser, ...patch } : null,
+        })),
       logout: () =>
         set({
           authed: false,
