@@ -38,6 +38,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { toast } from "sonner";
 
 const NAV: { key: ViewKey; label: string; icon: typeof Sprout; roles: Role[] }[] = [
   { key: "dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["BUYER", "FARMER", "WHOLESALER", "TRANSPORTER"] },
@@ -54,6 +55,14 @@ export function Header() {
   const itemCount = cart.reduce((s, c) => s + c.quantity, 0);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [sellOpen, setSellOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
+
+  // Click a notification → navigate to the relevant page + close the popover
+  const handleNotifClick = (target: ViewKey, message: string) => {
+    setNotifOpen(false);
+    setView(target);
+    toast.info(message);
+  };
 
   const visibleNav = NAV.filter((n) => n.roles.includes(role));
   const canSell = role === "FARMER" || role === "WHOLESALER";
@@ -122,7 +131,7 @@ export function Header() {
           </button>
 
           {/* Notifications bell */}
-          <Popover>
+          <Popover open={notifOpen} onOpenChange={setNotifOpen}>
             <PopoverTrigger asChild>
               <button className="relative grid size-8 place-items-center rounded-lg hover:bg-accent transition-colors" aria-label="Notifications">
                 <Bell className="size-4" />
@@ -141,18 +150,21 @@ export function Header() {
                       desc="You have a new order waiting to be confirmed"
                       time="2 min ago"
                       color="bg-primary"
+                      onClick={() => handleNotifClick("orders", "Opening your sales orders…")}
                     />
                     <NotifItem
                       title="Low stock alert"
                       desc="Fresh Organic Tomatoes is running low (5 kg left)"
                       time="1 hour ago"
                       color="bg-amber-500"
+                      onClick={() => handleNotifClick("dashboard", "Opening inventory management…")}
                     />
                     <NotifItem
                       title="Price update"
                       desc="Market price for Grains has increased by 8%"
                       time="3 hours ago"
                       color="bg-green-500"
+                      onClick={() => handleNotifClick("insights", "Opening market insights…")}
                     />
                   </>
                 ) : role === "TRANSPORTER" ? (
@@ -162,12 +174,14 @@ export function Header() {
                       desc="Order FM-30579006 is ready for pickup"
                       time="5 min ago"
                       color="bg-primary"
+                      onClick={() => handleNotifClick("orders", "Opening delivery orders…")}
                     />
                     <NotifItem
                       title="Route optimized"
                       desc="Your delivery route has been updated"
                       time="30 min ago"
                       color="bg-blue-500"
+                      onClick={() => handleNotifClick("dashboard", "Opening transporter dashboard…")}
                     />
                   </>
                 ) : (
@@ -177,24 +191,33 @@ export function Header() {
                       desc="Your order has been confirmed by the farmer"
                       time="10 min ago"
                       color="bg-primary"
+                      onClick={() => handleNotifClick("orders", "Opening your orders…")}
                     />
                     <NotifItem
                       title="Price drop alert"
                       desc="Fresh Green Spinach price dropped by 12%"
                       time="2 hours ago"
                       color="bg-green-500"
+                      onClick={() => handleNotifClick("marketplace", "Opening marketplace to shop…")}
                     />
                     <NotifItem
                       title="Weather advisory"
                       desc="Heavy rain expected tomorrow — plan your purchases"
                       time="5 hours ago"
                       color="bg-amber-500"
+                      onClick={() => handleNotifClick("weather", "Opening weather forecast…")}
                     />
                   </>
                 )}
               </div>
               <div className="border-t border-border/60 p-2 text-center">
-                <button className="text-xs font-medium text-primary hover:underline">
+                <button
+                  onClick={() => {
+                    setNotifOpen(false);
+                    toast.success("All notifications marked as read");
+                  }}
+                  className="text-xs font-medium text-primary hover:underline"
+                >
                   Mark all as read
                 </button>
               </div>
@@ -340,20 +363,25 @@ function NotifItem({
   desc,
   time,
   color,
+  onClick,
 }: {
   title: string;
   desc: string;
   time: string;
   color: string;
+  onClick?: () => void;
 }) {
   return (
-    <div className="flex gap-3 border-b border-border/40 p-3 hover:bg-accent/30 transition-colors cursor-pointer">
+    <button
+      onClick={onClick}
+      className="flex w-full gap-3 border-b border-border/40 p-3 text-left hover:bg-accent/30 transition-colors cursor-pointer"
+    >
       <div className={`mt-0.5 size-2 shrink-0 rounded-full ${color}`} />
       <div className="min-w-0 flex-1">
         <div className="text-sm font-medium">{title}</div>
         <div className="text-xs text-muted-foreground line-clamp-2">{desc}</div>
         <div className="mt-0.5 text-[10px] text-muted-foreground/70">{time}</div>
       </div>
-    </div>
+    </button>
   );
 }
