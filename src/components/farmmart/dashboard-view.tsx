@@ -83,6 +83,7 @@ export function DashboardView() {
 
 function FarmDashboard() {
   const userId = useStore((s) => s.authUser?.id);
+  const authUser = useStore((s) => s.authUser);
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [editOpen, setEditOpen] = useState(false);
@@ -197,11 +198,24 @@ function FarmDashboard() {
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 py-6">
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold">Farm Dashboard</h1>
-          <p className="text-sm text-muted-foreground">
-            Manage listings, track inventory, and monitor sales performance.
-          </p>
+        <div className="flex items-center gap-4">
+          {authUser?.avatar ? (
+            <img
+              src={authUser.avatar}
+              alt={authUser.name}
+              className="size-14 rounded-full object-cover border-2 border-primary/20 shadow-sm"
+            />
+          ) : (
+            <div className="grid size-14 place-items-center rounded-full bg-primary text-lg font-bold text-primary-foreground shadow-sm">
+              {(authUser?.name || "U").split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase()}
+            </div>
+          )}
+          <div>
+            <h1 className="text-2xl font-bold">Farm Dashboard</h1>
+            <p className="text-sm text-muted-foreground">
+              Manage listings, track inventory, and monitor sales performance.
+            </p>
+          </div>
         </div>
         <Button onClick={openNew} className="gap-1.5 shadow-sm">
           <PlusCircle className="size-4" /> Add Product

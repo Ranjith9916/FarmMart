@@ -155,17 +155,33 @@ export function TransporterDashboard() {
   }
 
   const firstName = authUser?.name?.split(" ")[0] || "there";
+  const initials = (authUser?.name || "U").split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase();
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 py-6">
       {/* Welcome header */}
       <div className="mb-6 fm-field-bg rounded-2xl border border-border/60 p-6">
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Truck className="size-7 text-primary" /> Transporter Dashboard
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Welcome back, {firstName}! Manage your deliveries, track shipments, and monitor earnings.
-        </p>
+        <div className="flex items-center gap-4">
+          {authUser?.avatar ? (
+            <img
+              src={authUser.avatar}
+              alt={authUser.name}
+              className="size-14 rounded-full object-cover border-2 border-primary/20 shadow-sm"
+            />
+          ) : (
+            <div className="grid size-14 place-items-center rounded-full bg-primary text-lg font-bold text-primary-foreground shadow-sm">
+              {initials}
+            </div>
+          )}
+          <div>
+            <h1 className="text-2xl font-bold flex items-center gap-2">
+              <Truck className="size-7 text-primary" /> Transporter Dashboard
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Welcome back, {firstName}! Manage your deliveries, track shipments, and monitor earnings.
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* KPI grid */}
