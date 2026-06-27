@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "FarmMart" }],
   icons: {
-    icon: "/farmmart-logo.svg",
+    icon: "/farmmart-icon.svg",
     apple: "/logo-new.png",
   },
 };
