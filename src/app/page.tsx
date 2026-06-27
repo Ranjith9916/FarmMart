@@ -16,6 +16,7 @@ import { WeatherView } from "@/components/farmmart/weather-view";
 import { InsightsView } from "@/components/farmmart/insights-view";
 import { Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { LiveChatWidget } from "@/components/farmmart/live-chat-widget";
 
 export default function Home() {
   const { authed, view } = useStore();
@@ -67,6 +68,7 @@ export default function Home() {
       <Footer />
       <ProductDetailDialog />
       <MobileNav />
+      <LiveChatWidget />
     </div>
   );
 }

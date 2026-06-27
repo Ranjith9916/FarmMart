@@ -220,6 +220,60 @@ export function BuyerDashboard() {
         })}
       </div>
 
+      {/* Loyalty Points Card */}
+      <Card className="mt-4 overflow-hidden p-0">
+        <div className="flex flex-col sm:flex-row">
+          {/* Points display */}
+          <div className="flex-1 bg-gradient-to-br from-primary/10 to-accent/30 p-5">
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">🏆</span>
+              <h3 className="font-semibold">FarmMart Rewards</h3>
+            </div>
+            <div className="mt-3 flex items-end gap-2">
+              <span className="text-4xl font-bold text-primary">
+                {Math.round(totalSpent * 10)}
+              </span>
+              <span className="mb-1 text-sm text-muted-foreground">points</span>
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Earn 10 points per ₹1 spent · Redeem for discounts
+            </p>
+          </div>
+          {/* Tier progress */}
+          <div className="flex-1 p-5">
+            <div className="space-y-2">
+              {[
+                { name: "Bronze", min: 0, max: 500, icon: "🥉", color: "text-amber-700" },
+                { name: "Silver", min: 500, max: 2000, icon: "🥈", color: "text-gray-500" },
+                { name: "Gold", min: 2000, max: 5000, icon: "🥇", color: "text-amber-500" },
+                { name: "Platinum", min: 5000, max: 10000, icon: "💎", color: "text-purple-500" },
+              ].map((tier) => {
+                const points = Math.round(totalSpent * 10);
+                const active = points >= tier.min;
+                return (
+                  <div
+                    key={tier.name}
+                    className={cn(
+                      "flex items-center justify-between rounded-lg px-3 py-1.5 text-xs transition-colors",
+                      active ? "bg-primary/10 font-medium" : "opacity-50"
+                    )}
+                  >
+                    <span className={cn("flex items-center gap-1.5", active && tier.color)}>
+                      <span>{tier.icon}</span>
+                      {tier.name}
+                    </span>
+                    <span className="text-muted-foreground">
+                      {tier.min.toLocaleString("en-IN")} pts
+                      {active && " ✓"}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </Card>
+
       {/* Quick actions */}
       <div className="mt-6">
         <h2 className="mb-3 font-semibold">Quick Actions</h2>

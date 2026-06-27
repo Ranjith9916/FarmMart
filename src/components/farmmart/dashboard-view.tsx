@@ -298,6 +298,63 @@ function FarmDashboard() {
         </Card>
       </div>
 
+      {/* Harvest Calendar */}
+      <Card className="mt-4 p-5">
+        <div className="mb-3 flex items-center gap-2">
+          <span className="text-lg">📅</span>
+          <h3 className="font-semibold">Harvest Calendar</h3>
+          <Badge variant="secondary" className="text-[10px] ml-auto">
+            Current season
+          </Badge>
+        </div>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
+          {[
+            { month: "Jan", crops: ["Wheat", "Mustard"], active: false },
+            { month: "Feb", crops: ["Wheat", "Gram"], active: false },
+            { month: "Mar", crops: ["Wheat", "Barley"], active: false },
+            { month: "Apr", crops: ["Rice", "Maize"], active: false },
+            { month: "May", crops: ["Mango", "Melon"], active: true },
+            { month: "Jun", crops: ["Rice", "Cotton"], active: true },
+            { month: "Jul", crops: ["Rice", "Soybean"], active: true },
+            { month: "Aug", crops: ["Pulses", "Maize"], active: false },
+            { month: "Sep", crops: ["Rice", "Pulses"], active: false },
+            { month: "Oct", crops: ["Cotton", "Soybean"], active: false },
+            { month: "Nov", crops: ["Wheat", "Mustard"], active: false },
+            { month: "Dec", crops: ["Wheat", "Gram"], active: false },
+          ].map((m) => (
+            <div
+              key={m.month}
+              className={cn(
+                "rounded-lg border p-2.5 transition-colors",
+                m.active
+                  ? "border-primary/40 bg-primary/10"
+                  : "border-border/60 bg-secondary/30"
+              )}
+            >
+              <div className={cn(
+                "text-xs font-bold",
+                m.active ? "text-primary" : "text-muted-foreground"
+              )}>
+                {m.month}
+              </div>
+              <div className="mt-1 space-y-0.5">
+                {m.crops.map((c) => (
+                  <div key={c} className="text-[10px] text-muted-foreground">
+                    {c}
+                  </div>
+                ))}
+              </div>
+              {m.active && (
+                <div className="mt-1 flex items-center gap-0.5 text-[8px] font-medium text-primary">
+                  <span className="size-1.5 animate-pulse rounded-full bg-primary" />
+                  In season
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </Card>
+
       {/* Inventory table */}
       <Card className="mt-4 p-4">
         <div className="mb-3 flex items-center justify-between">
