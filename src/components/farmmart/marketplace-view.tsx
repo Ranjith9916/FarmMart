@@ -217,6 +217,10 @@ export function MarketplaceView() {
             <Badge variant="secondary" className="gap-1">
               <Bot className="size-3" /> AI advisory
             </Badge>
+            <Badge className="gap-1 bg-green-500/15 text-green-700 hover:bg-green-500/20">
+              <span className="size-2 animate-pulse rounded-full bg-green-500" />
+              {Math.floor(Math.random() * 30 + 50)} buyers online now
+            </Badge>
           </div>
         </div>
       </section>

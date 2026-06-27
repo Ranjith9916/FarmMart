@@ -35,6 +35,7 @@ import {
   Legend,
 } from "recharts";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 import { AddProductDialog } from "./add-product-dialog";
 import { BuyerDashboard } from "./buyer-dashboard-view";
 import { TransporterDashboard } from "./transporter-dashboard-view";
@@ -233,6 +234,14 @@ function FarmDashboard() {
         })}
       </div>
 
+      {/* Achievement Badges */}
+      <AchievementBadges
+        totalProducts={stats?.totalProducts || 0}
+        totalSold={stats?.totalSales || 0}
+        totalRevenue={stats?.totalRevenue || 0}
+        pendingOrders={stats?.pendingOrders || 0}
+      />
+
       {/* Charts */}
       <div className="mt-4 grid gap-4 lg:grid-cols-3">
         <Card className="p-4 lg:col-span-2">
@@ -388,5 +397,105 @@ function FarmDashboard() {
         }}
       />
     </div>
+  );
+}
+
+// Achievement Badges — gamification for farmers
+function AchievementBadges({
+  totalProducts,
+  totalSold,
+  totalRevenue,
+  pendingOrders,
+}: {
+  totalProducts: number;
+  totalSold: number;
+  totalRevenue: number;
+  pendingOrders: number;
+}) {
+  const badges = [
+    {
+      id: "first-listing",
+      icon: "🌱",
+      title: "First Listing",
+      desc: "Published your first product",
+      unlocked: totalProducts >= 1,
+      color: "bg-green-500/15 text-green-700 border-green-500/30",
+    },
+    {
+      id: "growing-farm",
+      icon: "📈",
+      title: "Growing Farm",
+      desc: "Listed 3+ products",
+      unlocked: totalProducts >= 3,
+      color: "bg-blue-500/15 text-blue-700 border-blue-500/30",
+    },
+    {
+      id: "first-sale",
+      icon: "💰",
+      title: "First Sale",
+      desc: "Sold your first item",
+      unlocked: totalSold >= 1,
+      color: "bg-amber-500/15 text-amber-700 border-amber-500/30",
+    },
+    {
+      id: "bulk-seller",
+      icon: "🏆",
+      title: "Bulk Seller",
+      desc: "Sold 10+ items total",
+      unlocked: totalSold >= 10,
+      color: "bg-purple-500/15 text-purple-700 border-purple-500/30",
+    },
+    {
+      id: "revenue-milestone",
+      icon: "🎯",
+      title: "Revenue Milestone",
+      desc: "Earned ₹1,000+ total",
+      unlocked: totalRevenue >= 1000,
+      color: "bg-primary/15 text-primary border-primary/30",
+    },
+    {
+      id: "active-seller",
+      icon: "⚡",
+      title: "Active Seller",
+      desc: "Has pending orders",
+      unlocked: pendingOrders >= 1,
+      color: "bg-indigo-500/15 text-indigo-700 border-indigo-500/30",
+    },
+  ];
+
+  const unlockedCount = badges.filter((b) => b.unlocked).length;
+
+  return (
+    <Card className="mt-4 p-5">
+      <div className="mb-3 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="text-lg">🏅</span>
+          <h3 className="font-semibold">Achievements</h3>
+        </div>
+        <Badge className="bg-primary/15 text-primary">
+          {unlockedCount}/{badges.length} unlocked
+        </Badge>
+      </div>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+        {badges.map((badge) => (
+          <div
+            key={badge.id}
+            className={cn(
+              "flex flex-col items-center gap-1.5 rounded-xl border p-3 text-center transition-all",
+              badge.unlocked
+                ? badge.color
+                : "border-border/60 bg-secondary/30 opacity-50 grayscale"
+            )}
+          >
+            <span className="text-2xl">{badge.icon}</span>
+            <div className="text-xs font-semibold leading-tight">{badge.title}</div>
+            <div className="text-[10px] text-muted-foreground leading-tight">{badge.desc}</div>
+            {badge.unlocked && (
+              <Badge className="mt-0.5 bg-white/50 text-[8px] dark:bg-white/10">✓ Earned</Badge>
+            )}
+          </div>
+        ))}
+      </div>
+    </Card>
   );
 }

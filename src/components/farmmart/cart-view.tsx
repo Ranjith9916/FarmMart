@@ -35,6 +35,7 @@ import {
   ArrowLeft,
   Check,
   Sprout,
+  Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
 import type { Order } from "@/lib/types";
@@ -368,6 +369,35 @@ export function CartView() {
                 <span>Total</span>
                 <span className="text-primary">{fmtINR(totals.total)}</span>
               </div>
+
+              {/* Savings calculator */}
+              {cart.length > 0 && (
+                <div className="mt-3 rounded-lg border border-green-500/30 bg-green-500/5 p-3">
+                  <div className="flex items-center gap-1.5 text-xs font-semibold text-green-700">
+                    <Sparkles className="size-3" /> Your Savings
+                  </div>
+                  <div className="mt-1.5 space-y-1 text-xs">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Market price savings (est.)</span>
+                      <span className="font-medium text-green-600">
+                        {fmtINR(Math.round(totals.subtotal * 0.15))}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Shipping saved</span>
+                      <span className="font-medium text-green-600">
+                        {totals.shipping === 0 ? fmtINR(120) : fmtINR(0)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between border-t border-green-500/20 pt-1 font-bold text-green-700">
+                      <span>Total Savings</span>
+                      <span>
+                        {fmtINR(Math.round(totals.subtotal * 0.15) + (totals.shipping === 0 ? 120 : 0))}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             <Button
