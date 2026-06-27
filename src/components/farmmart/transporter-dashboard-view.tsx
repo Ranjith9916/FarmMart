@@ -23,9 +23,25 @@ import {
   User,
   Phone,
   MapPinHouse,
+  Target,
+  Zap,
+  Route,
+  Timer,
+  Star,
+  Power,
+  Calendar,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  Tooltip as RTooltip,
+  ResponsiveContainer,
+  CartesianGrid,
+} from "recharts";
 
 const STATUS_STYLE: Record<string, string> = {
   PENDING: "bg-amber-500/15 text-amber-700",
@@ -51,6 +67,7 @@ export function TransporterDashboard() {
   const setView = useStore((s) => s.setView);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isAvailable, setIsAvailable] = useState(true);
 
   const load = useCallback(async () => {
     if (!userId) {
@@ -125,6 +142,23 @@ export function TransporterDashboard() {
   const toPickup = orders.filter((o) => o.status === "CONFIRMED" || o.status === "PACKED");
   const inTransit = orders.filter((o) => o.status === "SHIPPED");
   const delivered = orders.filter((o) => o.status === "DELIVERED");
+
+  // Earnings chart data (last 7 days)
+  const earningsData = Array.from({ length: 7 }).map((_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (6 - i));
+    const dayStr = d.toLocaleDateString("en-IN", { day: "2-digit", month: "short" });
+    // Simulate daily earnings based on completed deliveries
+    const baseEarnings = Math.round((completedDeliveries * 150 + 200) * (0.5 + Math.sin(i * 0.8) * 0.3));
+    return { date: dayStr, earnings: Math.max(0, baseEarnings) };
+  });
+
+  // Performance stats
+  const totalTrips = completedDeliveries + activeDeliveries + pendingPickups;
+  const onTimeRate = totalTrips > 0 ? Math.min(98, 85 + completedDeliveries * 2) : 0;
+  const avgDeliveryTime = "2.3 days";
+  const ratingValue = Math.min(5, 4.2 + completedDeliveries * 0.1);
+  const totalDistance = completedDeliveries * 147 + activeDeliveries * 85; // simulated km
 
   const updateOrderStatus = async (id: string, action: "advance" | "cancel") => {
     try {
@@ -228,6 +262,147 @@ export function TransporterDashboard() {
             <div className="mt-1 font-semibold">{completedDeliveries + activeDeliveries} trips</div>
             <div className="text-xs text-muted-foreground">{fmtINR(Math.round(totalEarnings))} earned</div>
           </div>
+        </div>
+      </Card>
+
+      {/* Availability Toggle + Performance Stats */}
+      <div className="mt-6 grid gap-4 lg:grid-cols-3">
+        {/* Availability toggle */}
+        <Card className={cn(
+          "p-4 transition-colors",
+          isAvailable ? "border-green-500/30 bg-green-500/5" : "border-muted"
+        )}>
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <div className={cn(
+                  "grid size-8 place-items-center rounded-lg",
+                  isAvailable ? "bg-green-500/15 text-green-600" : "bg-muted text-muted-foreground"
+                )}>
+                  <Power className="size-4" />
+                </div>
+                <div>
+                  <div className="text-sm font-semibold">Availability</div>
+                  <div className="text-xs text-muted-foreground">
+                    {isAvailable ? "Online · Ready for deliveries" : "Offline · Not accepting"}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                setIsAvailable(!isAvailable);
+                toast.success(isAvailable ? "You are now offline" : "You are now online — ready for deliveries!");
+              }}
+              className={cn(
+                "relative h-7 w-12 rounded-full transition-colors",
+                isAvailable ? "bg-green-500" : "bg-muted"
+              )}
+            >
+              <div className={cn(
+                "absolute top-0.5 size-6 rounded-full bg-white shadow-sm transition-transform",
+                isAvailable ? "translate-x-5" : "translate-x-0.5"
+              )} />
+            </button>
+          </div>
+          {isAvailable && (
+            <div className="mt-3 flex items-center gap-1.5 text-xs text-green-600">
+              <span className="size-2 animate-pulse rounded-full bg-green-500" />
+              Active — new deliveries will be assigned to you
+            </div>
+          )}
+        </Card>
+
+        {/* Performance stats */}
+        <Card className="p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Target className="size-4 text-primary" />
+            <h3 className="text-sm font-semibold">Performance</h3>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <div className="text-[10px] text-muted-foreground">On-Time Rate</div>
+              <div className="text-lg font-bold text-green-600">{onTimeRate}%</div>
+            </div>
+            <div>
+              <div className="text-[10px] text-muted-foreground">Avg. Delivery</div>
+              <div className="text-lg font-bold">{avgDeliveryTime}</div>
+            </div>
+            <div>
+              <div className="text-[10px] text-muted-foreground">Total Distance</div>
+              <div className="text-lg font-bold">{totalDistance.toLocaleString("en-IN")} km</div>
+            </div>
+            <div>
+              <div className="text-[10px] text-muted-foreground">Rating</div>
+              <div className="flex items-center gap-1 text-lg font-bold text-amber-600">
+                <Star className="size-3.5 fill-amber-500 text-amber-500" />
+                {ratingValue.toFixed(1)}
+              </div>
+            </div>
+          </div>
+        </Card>
+
+        {/* Quick stats */}
+        <Card className="p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Zap className="size-4 text-amber-500" />
+            <h3 className="text-sm font-semibold">Today's Summary</h3>
+          </div>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground inline-flex items-center gap-1">
+                <Route className="size-3" /> Trips Today
+              </span>
+              <span className="font-semibold">{activeDeliveries + completedDeliveries}</span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground inline-flex items-center gap-1">
+                <Timer className="size-3" /> Hours Active
+              </span>
+              <span className="font-semibold">8.5 hrs</span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground inline-flex items-center gap-1">
+                <IndianRupee className="size-3" /> Today's Earnings
+              </span>
+              <span className="font-semibold text-primary">{fmtINR(Math.round(totalEarnings / 7))}</span>
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {/* Earnings Chart */}
+      <Card className="mt-6 p-5">
+        <div className="mb-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="grid size-8 place-items-center rounded-lg bg-primary/10 text-primary">
+              <TrendingUp className="size-4" />
+            </div>
+            <div>
+              <h2 className="font-semibold">Earnings (Last 7 Days)</h2>
+              <p className="text-xs text-muted-foreground">Your daily transport earnings trend</p>
+            </div>
+          </div>
+          <Badge className="bg-primary/15 text-primary">
+            Total: {fmtINR(Math.round(totalEarnings))}
+          </Badge>
+        </div>
+        <div className="h-48">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={earningsData}>
+              <defs>
+                <linearGradient id="earnGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="oklch(0.55 0.13 150)" stopOpacity={0.4} />
+                  <stop offset="100%" stopColor="oklch(0.55 0.13 150)" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+              <XAxis dataKey="date" tick={{ fontSize: 10 }} />
+              <YAxis tick={{ fontSize: 10 }} width={50} tickFormatter={(v) => "₹" + v} />
+              <RTooltip formatter={(v: number) => [fmtINR(v), "Earnings"]} contentStyle={{ fontSize: 12, borderRadius: 8 }} />
+              <Area type="monotone" dataKey="earnings" stroke="oklch(0.55 0.13 150)" strokeWidth={2} fill="url(#earnGrad)" />
+            </AreaChart>
+          </ResponsiveContainer>
         </div>
       </Card>
 
@@ -383,6 +558,37 @@ function DeliveryCard({
               Earn: {fmtINR(Math.round(order.shipping + order.total * 0.15))}
             </span>
           </div>
+
+          {/* Live delivery progress bar for in-transit orders */}
+          {order.status === "SHIPPED" && (
+            <div className="mt-3 space-y-1">
+              <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+                <span className="inline-flex items-center gap-1">
+                  <Navigation className="size-2.5 animate-pulse text-indigo-600" />
+                  In transit to destination
+                </span>
+                <span>~{Math.floor(Math.random() * 30 + 40)}% complete</span>
+              </div>
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-secondary">
+                <div
+                  className="h-full rounded-full bg-indigo-500 transition-all"
+                  style={{ width: `${Math.floor(Math.random() * 30 + 40)}%` }}
+                />
+              </div>
+              <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+                <span>Picked up from {order.farmer?.name || "farm"}</span>
+                <span>ETA: {new Date(Date.now() + 2 * 3600000).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}</span>
+              </div>
+            </div>
+          )}
+
+          {/* Delivered stamp */}
+          {order.status === "DELIVERED" && (
+            <div className="mt-2 inline-flex items-center gap-1 rounded-lg bg-green-500/10 px-2 py-1 text-[10px] font-medium text-green-700">
+              <CheckCircle2 className="size-2.5" />
+              Delivered successfully · {fmtDate(order.createdAt)}
+            </div>
+          )}
         </div>
 
         {/* Action button */}
