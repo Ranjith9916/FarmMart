@@ -217,10 +217,6 @@ export function MarketplaceView() {
             <Badge variant="secondary" className="gap-1">
               <Bot className="size-3" /> AI advisory
             </Badge>
-            <Badge className="gap-1 bg-green-500/15 text-green-700 hover:bg-green-500/20">
-              <span className="size-2 animate-pulse rounded-full bg-green-500" />
-              {Math.floor(Math.random() * 30 + 50)} buyers online now
-            </Badge>
           </div>
         </div>
       </section>
@@ -229,6 +225,55 @@ export function MarketplaceView() {
       {!loading && products.length > 0 && (
         <DealOfTheDay products={products} setActiveProduct={setActiveProduct} addRecentlyViewed={addRecentlyViewed} />
       )}
+
+      {/* Trust badges strip */}
+      <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {[
+          { icon: ShieldCheck, label: "Verified Farms", desc: "Quality assured", color: "text-green-600 bg-green-500/10" },
+          { icon: Truck, label: "Fast Delivery", desc: "2-3 days pan-India", color: "text-blue-600 bg-blue-500/10" },
+          { icon: Bot, label: "AI Powered", desc: "Smart recommendations", color: "text-purple-600 bg-purple-500/10" },
+          { icon: ShieldCheck, label: "Secure Payments", desc: "256-bit encrypted", color: "text-amber-600 bg-amber-500/10" },
+        ].map((t) => {
+          const Icon = t.icon;
+          return (
+            <div key={t.label} className="flex items-center gap-2.5 rounded-xl border border-border/60 bg-card p-3">
+              <div className={`grid size-9 shrink-0 place-items-center rounded-lg ${t.color}`}>
+                <Icon className="size-4" />
+              </div>
+              <div className="min-w-0">
+                <div className="text-xs font-semibold">{t.label}</div>
+                <div className="text-[10px] text-muted-foreground truncate">{t.desc}</div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Live marketplace stats banner */}
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/20 bg-primary/5 px-5 py-3">
+        <div className="flex items-center gap-2">
+          <span className="size-2 animate-pulse rounded-full bg-green-500" />
+          <span className="text-sm font-medium text-muted-foreground">Live marketplace activity</span>
+        </div>
+        <div className="flex flex-wrap gap-4 text-sm">
+          <div className="flex items-center gap-1">
+            <span className="font-bold text-primary">{products.length || 0}</span>
+            <span className="text-muted-foreground">products</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="font-bold text-primary">{new Set(products.map(p => p.farmer?.name)).size || 0}</span>
+            <span className="text-muted-foreground">farmers</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="font-bold text-primary">{Math.floor(Math.random() * 50 + 120)}</span>
+            <span className="text-muted-foreground">orders today</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="font-bold text-green-600">{Math.floor(Math.random() * 30 + 50)}</span>
+            <span className="text-muted-foreground">buyers online</span>
+          </div>
+        </div>
+      </div>
 
       {/* Search + sort bar */}
       <div className="sticky top-16 z-30 mb-4 flex flex-wrap items-center gap-2 rounded-xl border border-border/60 bg-background/90 p-2 backdrop-blur">
@@ -304,7 +349,7 @@ export function MarketplaceView() {
               const wishProducts = allProducts.filter((p) => wishlist.includes(p.id));
               if (wishProducts.length === 0) return null;
               return (
-                <div className="mb-6">
+                <div className="mb-6 rounded-xl border border-red-500/20 bg-red-500/5 p-4">
                   <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold">
                     <span className="text-red-500">♥</span> Your Wishlist ({wishProducts.length})
                   </h2>
@@ -331,7 +376,7 @@ export function MarketplaceView() {
             })()
           )}
 
-          {/* Recently viewed section */}
+          {/* Recently viewed — SEPARATED section with its own container */}
           {!loading && recentlyViewed.length > 0 && allProducts.length > 0 && (
             (() => {
               const recentProducts = recentlyViewed
@@ -340,15 +385,21 @@ export function MarketplaceView() {
                 .slice(0, 6) as Product[];
               if (recentProducts.length === 0) return null;
               return (
-                <div className="mb-6">
-                  <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold">
-                    Recently Viewed
-                  </h2>
+                <div className="mb-6 rounded-xl border border-primary/20 bg-primary/5 p-4">
+                  <div className="mb-3 flex items-center justify-between">
+                    <h2 className="flex items-center gap-2 text-sm font-semibold">
+                      <Clock className="size-4 text-primary" />
+                      Recently Viewed
+                    </h2>
+                    <Badge variant="secondary" className="text-[10px]">
+                      {recentProducts.length} items
+                    </Badge>
+                  </div>
                   <div className="fm-scroll flex gap-3 overflow-x-auto pb-2">
                     {recentProducts.map((p) => (
                       <div
                         key={p.id}
-                        className="w-44 shrink-0 cursor-pointer"
+                        className="w-40 shrink-0 cursor-pointer rounded-lg border border-border/40 bg-card p-2 transition-all hover:shadow-md"
                         onClick={() => {
                           addRecentlyViewed(p.id);
                           setActiveProduct(p.id);
@@ -358,7 +409,9 @@ export function MarketplaceView() {
                           <img src={p.imageUrl} alt={p.name} className="size-full object-cover" />
                         </div>
                         <div className="mt-1.5 text-xs font-semibold truncate">{p.name}</div>
-                        <div className="text-xs text-primary font-bold">{fmtINR(p.price)}/{p.unit}</div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-primary font-bold">{fmtINR(p.price)}/{p.unit}</span>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -367,6 +420,16 @@ export function MarketplaceView() {
             })()
           )}
 
+          {/* Divider — clearly separates recently viewed from all products */}
+          <div className="mb-4 flex items-center gap-3">
+            <div className="h-px flex-1 bg-border/60" />
+            <Badge variant="secondary" className="gap-1 text-xs">
+              <Store className="size-3" /> All Products
+            </Badge>
+            <div className="h-px flex-1 bg-border/60" />
+          </div>
+
+          {/* Product grid */}
           {loading ? (
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
               {Array.from({ length: 8 }).map((_, i) => (

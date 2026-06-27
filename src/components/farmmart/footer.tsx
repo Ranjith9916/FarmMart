@@ -49,6 +49,22 @@ export function Footer() {
               <li>Inventory Tracking</li>
             </ul>
           </div>
+          <div>
+            <h4 className="text-sm font-semibold">Stay Updated</h4>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Get market prices, weather alerts & AI tips in your inbox.
+            </p>
+            <div className="mt-2 flex gap-2">
+              <input
+                type="email"
+                placeholder="your@email.com"
+                className="h-9 flex-1 rounded-lg border border-border bg-background px-3 text-xs outline-none focus:border-primary"
+              />
+              <button className="rounded-lg bg-primary px-3 text-xs font-medium text-primary-foreground hover:bg-primary/90">
+                Subscribe
+              </button>
+            </div>
+          </div>
         </div>
         <div className="mt-6 flex flex-col items-center justify-between gap-2 border-t border-border/60 pt-4 text-xs text-muted-foreground sm:flex-row">
           <span className="inline-flex items-center gap-1">
