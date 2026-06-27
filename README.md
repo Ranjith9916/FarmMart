@@ -12,6 +12,24 @@
 
 ---
 
+## 🚀 Quick Preview
+
+**Want to see it live?** Run the project locally and click the link below:
+
+### → [🌐 Open FarmMart at http://localhost:3000](http://localhost:3000)
+
+> ⚠️ **Note:** The link above works **only after** you've started the dev server locally. Follow the [Getting Started](#-getting-started) steps below to set it up first.
+
+### One-Command Setup
+
+```bash
+git clone https://github.com/Ranjith9916/FarmMart.git && cd FarmMart && bun install && echo "DATABASE_URL=file:./dev.db" > .env && bun run db:push && bun run dev
+```
+
+Then click → **[http://localhost:3000](http://localhost:3000)**
+
+---
+
 ## 📸 Preview
 
 ### Login Page — 3D Animated Cinematic Background
