@@ -64,13 +64,19 @@ export async function PATCH(
     });
 
     // If cancelled, restore product stock & reduce sold count
+    // Also reactivate the product if it was marked out of stock
     if (action === "cancel") {
       for (const item of order.items) {
+        const product = await db.product.findUnique({ where: { id: item.productId } });
+        if (!product) continue;
+        const restoredStock = product.stock + item.quantity;
         await db.product.update({
           where: { id: item.productId },
           data: {
             stock: { increment: item.quantity },
             sold: { decrement: item.quantity },
+            // Reactivate the product if it was out of stock
+            ...(restoredStock > 0 && !product.active && { active: true }),
           },
         });
       }

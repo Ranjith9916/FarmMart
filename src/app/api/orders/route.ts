@@ -75,6 +75,25 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    // Validate stock for all items before creating the order
+    for (const it of items) {
+      const product = await db.product.findUnique({ where: { id: it.productId } });
+      if (!product) {
+        return NextResponse.json(
+          { error: `Product "${it.name}" no longer exists` },
+          { status: 400 }
+        );
+      }
+      if (product.stock < it.quantity) {
+        return NextResponse.json(
+          {
+            error: `Not enough stock for "${product.name}". Available: ${product.stock} ${product.unit}, requested: ${it.quantity} ${product.unit}`,
+          },
+          { status: 400 }
+        );
+      }
+    }
+
     const subtotal = items.reduce((s, it) => s + it.price * it.quantity, 0);
     const shipping = subtotal > 2500 ? 0 : 120;
     const tax = Math.round(subtotal * 0.02 * 100) / 100;
@@ -113,13 +132,19 @@ export async function POST(req: NextRequest) {
       include: { items: true },
     });
 
-    // Decrement stock & increment sold
+    // Decrement stock & increment sold — also mark as inactive if out of stock
     for (const it of items) {
+      const product = await db.product.findUnique({ where: { id: it.productId } });
+      if (!product) continue;
+
+      const newStock = product.stock - it.quantity;
       await db.product.update({
         where: { id: it.productId },
         data: {
           stock: { decrement: it.quantity },
           sold: { increment: it.quantity },
+          // Mark as inactive (out of stock) if stock reaches 0 or below
+          ...(newStock <= 0 && { active: false, stock: 0 }),
         },
       });
     }
