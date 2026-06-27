@@ -29,6 +29,9 @@ import {
   Loader2,
   Phone,
   MessageSquare,
+  Link2,
+  MessageCircle,
+  Twitter,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -337,6 +340,39 @@ export function ProductDetailDialog() {
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <Truck className="size-4 text-primary" />
                   Free shipping on orders above ₹2,500 · 2% GST applied
+                </div>
+
+                {/* Share buttons */}
+                <div className="flex items-center gap-2 pt-1">
+                  <span className="text-xs font-medium text-muted-foreground">Share:</span>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard?.writeText(window.location.href);
+                      toast.success("Link copied to clipboard!");
+                    }}
+                    className="grid size-8 place-items-center rounded-lg bg-secondary hover:bg-accent transition-colors"
+                    aria-label="Copy link"
+                  >
+                    <Link2 className="size-3.5" />
+                  </button>
+                  <a
+                    href={`https://wa.me/?text=Check out ${product.name} on FarmMart — ${fmtINR(product.price)}/${product.unit}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="grid size-8 place-items-center rounded-lg bg-green-500/15 text-green-600 hover:bg-green-500/25 transition-colors"
+                    aria-label="Share on WhatsApp"
+                  >
+                    <MessageCircle className="size-3.5" />
+                  </a>
+                  <a
+                    href={`https://twitter.com/intent/tweet?text=Check out ${product.name} on FarmMart — ${fmtINR(product.price)}/${product.unit}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="grid size-8 place-items-center rounded-lg bg-blue-500/15 text-blue-600 hover:bg-blue-500/25 transition-colors"
+                    aria-label="Share on Twitter"
+                  >
+                    <Twitter className="size-3.5" />
+                  </a>
                 </div>
 
                 <Button

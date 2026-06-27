@@ -6,7 +6,7 @@ import { fmtINR } from "@/lib/api";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Star, MapPin, Leaf, Package, ShoppingCart, Truck, Heart, Flame, TrendingUp } from "lucide-react";
+import { Star, MapPin, Leaf, Package, ShoppingCart, Truck, Heart, Flame, TrendingUp, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -175,10 +175,13 @@ export function ProductCard({ product }: { product: Product }) {
 
         <div className="flex items-center justify-between border-t border-border/60 pt-2 text-[11px] text-muted-foreground">
           <span className="inline-flex items-center gap-1 truncate">
-            <Package className="size-3 shrink-0" />
+            <ShieldCheck className="size-3 shrink-0 text-primary" />
             {product.farmer.name}
           </span>
-          <span>{product.reviewCount} reviews</span>
+          <span className="inline-flex items-center gap-0.5">
+            <Star className="size-2.5 fill-amber-500 text-amber-500" />
+            {product.reviewCount} reviews
+          </span>
         </div>
       </div>
     </Card>

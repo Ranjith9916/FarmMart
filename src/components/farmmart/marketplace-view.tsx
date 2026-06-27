@@ -34,6 +34,8 @@ import {
   Bot,
   X,
   Store,
+  Flame,
+  Clock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -219,6 +221,11 @@ export function MarketplaceView() {
         </div>
       </section>
 
+      {/* Deal of the Day */}
+      {!loading && products.length > 0 && (
+        <DealOfTheDay products={products} setActiveProduct={setActiveProduct} addRecentlyViewed={addRecentlyViewed} />
+      )}
+
       {/* Search + sort bar */}
       <div className="sticky top-16 z-30 mb-4 flex flex-wrap items-center gap-2 rounded-xl border border-border/60 bg-background/90 p-2 backdrop-blur">
         <div className="relative min-w-[200px] flex-1">
@@ -390,6 +397,110 @@ export function MarketplaceView() {
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+// Deal of the Day — shows the cheapest product with a countdown timer
+function DealOfTheDay({
+  products,
+  setActiveProduct,
+  addRecentlyViewed,
+}: {
+  products: Product[];
+  setActiveProduct: (id: string) => void;
+  addRecentlyViewed: (id: string) => void;
+}) {
+  const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 });
+
+  // Pick the deal product (lowest price product)
+  const dealProduct = products.length > 0
+    ? [...products].sort((a, b) => a.price - b.price)[0]
+    : null;
+
+  // Countdown to midnight
+  useEffect(() => {
+    const update = () => {
+      const now = new Date();
+      const midnight = new Date(now);
+      midnight.setHours(24, 0, 0, 0);
+      const diff = midnight.getTime() - now.getTime();
+      setTimeLeft({
+        hours: Math.floor(diff / (1000 * 60 * 60)),
+        minutes: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
+        seconds: Math.floor((diff % (1000 * 60)) / 1000),
+      });
+    };
+    update();
+    const interval = setInterval(update, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  if (!dealProduct) return null;
+
+  const originalPrice = Math.round(dealProduct.price * 1.3);
+  const discount = Math.round((1 - dealProduct.price / originalPrice) * 100);
+
+  return (
+    <section className="mb-6 overflow-hidden rounded-2xl border border-amber-500/30 bg-gradient-to-r from-amber-500/10 via-orange-500/5 to-background">
+      <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center">
+        {/* Product image */}
+        <div
+          className="relative aspect-square w-full shrink-0 cursor-pointer overflow-hidden rounded-xl bg-muted sm:w-28"
+          onClick={() => {
+            addRecentlyViewed(dealProduct.id);
+            setActiveProduct(dealProduct.id);
+          }}
+        >
+          <img
+            src={dealProduct.imageUrl}
+            alt={dealProduct.name}
+            className="size-full object-cover"
+          />
+          <Badge className="absolute left-1.5 top-1.5 gap-0.5 bg-amber-500 text-white text-[10px]">
+            <Flame className="size-2.5" /> -{discount}%
+          </Badge>
+        </div>
+
+        {/* Deal info */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <Badge className="gap-1 bg-amber-500 text-white">
+              <Flame className="size-3" /> Deal of the Day
+            </Badge>
+          </div>
+          <h3 className="mt-1.5 font-bold text-lg leading-tight truncate">{dealProduct.name}</h3>
+          <p className="text-xs text-muted-foreground line-clamp-1">{dealProduct.description}</p>
+          <div className="mt-2 flex items-center gap-2">
+            <span className="text-2xl font-bold text-primary">{fmtINR(dealProduct.price)}</span>
+            <span className="text-sm text-muted-foreground line-through">{fmtINR(originalPrice)}</span>
+            <span className="text-sm font-semibold text-green-600">Save {fmtINR(originalPrice - dealProduct.price)}</span>
+          </div>
+        </div>
+
+        {/* Countdown timer */}
+        <div className="flex flex-col items-center gap-1.5 shrink-0">
+          <div className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
+            <Clock className="size-3" /> Ends in
+          </div>
+          <div className="flex gap-1.5">
+            <TimeBox value={timeLeft.hours} label="HRS" />
+            <TimeBox value={timeLeft.minutes} label="MIN" />
+            <TimeBox value={timeLeft.seconds} label="SEC" />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function TimeBox({ value, label }: { value: number; label: string }) {
+  return (
+    <div className="flex flex-col items-center">
+      <div className="grid h-10 w-10 place-items-center rounded-lg bg-amber-500 font-mono text-lg font-bold text-white tabular-nums">
+        {String(value).padStart(2, "0")}
+      </div>
+      <span className="mt-0.5 text-[8px] font-medium text-muted-foreground">{label}</span>
     </div>
   );
 }
