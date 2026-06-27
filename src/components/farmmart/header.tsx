@@ -45,7 +45,7 @@ import { useTheme } from "next-themes";
 
 const NAV: { key: ViewKey; label: string; icon: typeof Sprout; roles: Role[] }[] = [
   { key: "dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["BUYER", "FARMER", "WHOLESALER", "TRANSPORTER"] },
-  { key: "marketplace", label: "Marketplace", icon: Store, roles: ["BUYER", "FARMER", "WHOLESALER", "TRANSPORTER"] },
+  { key: "marketplace", label: "Marketplace", icon: Store, roles: ["BUYER", "WHOLESALER"] },
   { key: "cart", label: "Cart", icon: ShoppingCart, roles: ["BUYER", "WHOLESALER"] },
   { key: "orders", label: "Orders", icon: Package, roles: ["BUYER", "FARMER", "WHOLESALER", "TRANSPORTER"] },
   { key: "advisor", label: "AI Crop Advisor", icon: Bot, roles: ["BUYER", "FARMER", "WHOLESALER", "TRANSPORTER"] },

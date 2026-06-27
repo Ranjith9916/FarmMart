@@ -23,9 +23,10 @@ export function MobileNav() {
   const { view, setView, role, cart } = useStore();
   const itemCount = cart.reduce((s, c) => s + c.quantity, 0);
 
-  // Only show cart for buyers/wholesalers
+  // Only show cart & marketplace for buyers/wholesalers
   const items = NAV_ITEMS.filter((item) => {
     if (item.key === "cart") return role === "BUYER" || role === "WHOLESALER";
+    if (item.key === "marketplace") return role === "BUYER" || role === "WHOLESALER";
     return true;
   });
 
