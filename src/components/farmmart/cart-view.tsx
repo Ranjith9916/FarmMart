@@ -328,6 +328,52 @@ export function CartView() {
           >
             <Package className="size-4 mr-1" /> Add more items
           </Button>
+
+          {/* Bulk discount indicator */}
+          {cart.length > 0 && (
+            <div className="mt-3 rounded-xl border border-primary/20 bg-primary/5 p-3">
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-primary">
+                <Sparkles className="size-3" /> Bulk Discount Tiers
+              </div>
+              <div className="mt-2 space-y-1.5">
+                {[
+                  { min: 5, discount: "5% off", label: "Buy 5+ items" },
+                  { min: 10, discount: "10% off", label: "Buy 10+ items" },
+                  { min: 20, discount: "15% off", label: "Buy 20+ items" },
+                ].map((tier) => {
+                  const reached = totals.itemCount >= tier.min;
+                  const remaining = tier.min - totals.itemCount;
+                  return (
+                    <div
+                      key={tier.min}
+                      className={cn(
+                        "flex items-center justify-between rounded-lg px-2.5 py-1.5 text-xs transition-colors",
+                        reached
+                          ? "bg-green-500/10 text-green-700"
+                          : "bg-secondary/50 text-muted-foreground"
+                      )}
+                    >
+                      <span className="flex items-center gap-1.5">
+                        {reached ? (
+                          <CheckCircle2 className="size-3 text-green-600" />
+                        ) : (
+                          <div className="grid size-3 place-items-center rounded-full border-2 border-muted-foreground/30" />
+                        )}
+                        {tier.label}
+                      </span>
+                      <span className="font-semibold">
+                        {reached ? (
+                          <span className="text-green-600">✓ {tier.discount}</span>
+                        ) : (
+                          <span>{tier.discount} · {remaining} more</span>
+                        )}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Summary */}

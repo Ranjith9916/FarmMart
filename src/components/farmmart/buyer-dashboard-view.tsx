@@ -246,6 +246,58 @@ export function BuyerDashboard() {
         </div>
       </div>
 
+      {/* Recommended for You — AI-powered suggestions */}
+      {products.length > 0 && (
+        <div className="mt-6">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="font-semibold flex items-center gap-2">
+              <Sparkles className="size-4 text-primary" />
+              Recommended for You
+              <Badge className="gap-1 bg-primary/10 text-primary text-[10px]">AI</Badge>
+            </h2>
+            <button
+              onClick={() => setView("marketplace")}
+              className="text-xs font-medium text-primary hover:underline"
+            >
+              View all →
+            </button>
+          </div>
+          <div className="fm-scroll flex gap-3 overflow-x-auto pb-2">
+            {products
+              .slice()
+              .sort((a, b) => b.rating - a.rating)
+              .slice(0, 6)
+              .map((p) => (
+                <div
+                  key={p.id}
+                  className="w-40 shrink-0 cursor-pointer rounded-xl border border-border/60 bg-card p-3 transition-all hover:border-primary/40 hover:shadow-md"
+                  onClick={() => {
+                    addRecentlyViewed(p.id);
+                    setActiveProduct(p.id);
+                  }}
+                >
+                  <div className="relative mb-2 aspect-square overflow-hidden rounded-lg bg-muted">
+                    <img src={p.imageUrl} alt={p.name} className="size-full object-cover" />
+                    {p.organic && (
+                      <Badge className="absolute left-1 top-1 bg-primary text-[8px] gap-0.5">
+                        <Leaf className="size-2" /> Organic
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="text-xs font-semibold truncate">{p.name}</div>
+                  <div className="flex items-center justify-between mt-1">
+                    <span className="text-sm font-bold text-primary">{fmtINR(p.price)}</span>
+                    <span className="flex items-center gap-0.5 text-[10px] text-amber-600">
+                      <Star className="size-2.5 fill-amber-500 text-amber-500" />
+                      {p.rating.toFixed(1)}
+                    </span>
+                  </div>
+                </div>
+              ))}
+          </div>
+        </div>
+      )}
+
       {/* Fresh from Farms — products listed by farmers */}
       <div className="mt-6">
         <div className="mb-3 flex items-center justify-between">

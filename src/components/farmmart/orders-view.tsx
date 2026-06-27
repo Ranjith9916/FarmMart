@@ -31,6 +31,7 @@ import {
   FileText,
   Printer,
   Calendar,
+  Navigation,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -331,11 +332,31 @@ export function OrdersView() {
                         <span className="text-muted-foreground">Ship to: </span>
                         {order.shippingAddress}
                       </div>
-                      {/* Estimated delivery date */}
+                      {/* Estimated delivery date + live countdown for shipped orders */}
                       {order.status !== "DELIVERED" && order.status !== "CANCELLED" && (
-                        <div className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
-                          <Calendar className="size-3" />
-                          Est. delivery: {getEstimatedDelivery(order)}
+                        <div className="mt-2 flex flex-wrap items-center gap-2">
+                          <div className="inline-flex items-center gap-1.5 rounded-lg bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
+                            <Calendar className="size-3" />
+                            Est. delivery: {getEstimatedDelivery(order)}
+                          </div>
+                          {order.status === "SHIPPED" && (
+                            <div className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-500/10 px-2.5 py-1 text-xs font-medium text-indigo-600">
+                              <Navigation className="size-3 animate-pulse" />
+                              In transit · Arriving soon
+                            </div>
+                          )}
+                          {order.status === "PACKED" && (
+                            <div className="inline-flex items-center gap-1.5 rounded-lg bg-blue-500/10 px-2.5 py-1 text-xs font-medium text-blue-600">
+                              <Package className="size-3" />
+                              Packed · Awaiting pickup
+                            </div>
+                          )}
+                          {order.status === "CONFIRMED" && (
+                            <div className="inline-flex items-center gap-1.5 rounded-lg bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-600">
+                              <Clock className="size-3" />
+                              Being prepared by farmer
+                            </div>
+                          )}
                         </div>
                       )}
                       <div className="flex flex-wrap gap-2">
