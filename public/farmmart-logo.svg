@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#3a7d2a"/>
+      <stop offset="100%" stop-color="#2d6e15"/>
+    </linearGradient>
+    <linearGradient id="leafGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7fd451"/>
+      <stop offset="100%" stop-color="#5cb33d"/>
+    </linearGradient>
+    <linearGradient id="wheatGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f5d76e"/>
+      <stop offset="100%" stop-color="#e8c544"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Rounded square background -->
+  <rect width="120" height="120" rx="28" fill="url(#bgGrad)"/>
+
+  <!-- Circle accent -->
+  <circle cx="60" cy="60" r="48" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1.5"/>
+
+  <!-- Main sprout/leaf -->
+  <path d="M60 88 C60 88 60 55 60 40" stroke="url(#leafGrad)" stroke-width="4" stroke-linecap="round" fill="none"/>
+
+  <!-- Left leaf -->
+  <path d="M58 65 C45 60 35 50 33 38 C33 38 48 42 56 52 C58 55 59 60 58 65 Z" fill="url(#leafGrad)"/>
+
+  <!-- Right leaf -->
+  <path d="M62 58 C75 53 85 43 87 31 C87 31 72 35 64 45 C62 48 61 53 62 58 Z" fill="url(#leafGrad)" opacity="0.9"/>
+
+  <!-- Top leaf (smaller, lighter) -->
+  <path d="M60 42 C55 35 50 28 48 22 C48 22 56 25 60 32 C62 35 61 39 60 42 Z" fill="url(#leafGrad)" opacity="0.8"/>
+
+  <!-- Wheat/grain accents (left) -->
+  <ellipse cx="40" cy="78" rx="2.5" ry="5" fill="url(#wheatGrad)" opacity="0.8" transform="rotate(-25 40 78)"/>
+  <ellipse cx="36" cy="82" rx="2.5" ry="5" fill="url(#wheatGrad)" opacity="0.7" transform="rotate(-25 36 82)"/>
+
+  <!-- Wheat/grain accents (right) -->
+  <ellipse cx="80" cy="78" rx="2.5" ry="5" fill="url(#wheatGrad)" opacity="0.8" transform="rotate(25 80 78)"/>
+  <ellipse cx="84" cy="82" rx="2.5" ry="5" fill="url(#wheatGrad)" opacity="0.7" transform="rotate(25 84 82)"/>
+
+  <!-- Soil/ground accent -->
+  <path d="M35 92 Q60 88 85 92" stroke="rgba(255,255,255,0.2)" stroke-width="2" stroke-linecap="round" fill="none"/>
+
+  <!-- Small dot accents (seeds) -->
+  <circle cx="45" cy="95" r="1.5" fill="rgba(255,255,255,0.3)"/>
+  <circle cx="60" cy="96" r="1.5" fill="rgba(255,255,255,0.3)"/>
+  <circle cx="75" cy="95" r="1.5" fill="rgba(255,255,255,0.3)"/>
+</svg>

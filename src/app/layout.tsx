@@ -28,6 +28,10 @@ export const metadata: Metadata = {
     "market intelligence",
   ],
   authors: [{ name: "FarmMart" }],
+  icons: {
+    icon: "/farmmart-logo.svg",
+    apple: "/logo-new.png",
+  },
 };
 
 export default function RootLayout({
