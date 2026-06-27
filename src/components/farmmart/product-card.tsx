@@ -6,7 +6,7 @@ import { fmtINR } from "@/lib/api";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Star, MapPin, Leaf, Package, ShoppingCart, Truck, Heart } from "lucide-react";
+import { Star, MapPin, Leaf, Package, ShoppingCart, Truck, Heart, Flame, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -15,6 +15,8 @@ export function ProductCard({ product }: { product: Product }) {
   const lowStock = product.stock < 200 && product.stock > 0;
   const outOfStock = product.stock <= 0;
   const isFav = wishlist.includes(product.id);
+  const isBestseller = product.sold > 500;
+  const stockPercent = Math.min(100, Math.round((product.stock / 1000) * 100));
 
   const handleCardClick = () => {
     addRecentlyViewed(product.id);
@@ -44,6 +46,11 @@ export function ProductCard({ product }: { product: Product }) {
           }}
         />
         <div className="absolute left-2 top-2 flex flex-col gap-1">
+          {isBestseller && (
+            <Badge className="bg-amber-500 text-white gap-1 shadow-sm">
+              <Flame className="size-3" /> Bestseller
+            </Badge>
+          )}
           {product.organic && (
             <Badge className="bg-primary text-primary-foreground gap-1 shadow-sm">
               <Leaf className="size-3" /> Organic
@@ -98,6 +105,32 @@ export function ProductCard({ product }: { product: Product }) {
         <p className="line-clamp-2 text-xs text-muted-foreground min-h-[2rem]">
           {product.description}
         </p>
+
+        {/* Stock progress bar */}
+        {!outOfStock && (
+          <div className="space-y-0.5">
+            <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+              <span className="inline-flex items-center gap-0.5">
+                <TrendingUp className="size-2.5" />
+                {product.sold.toLocaleString("en-IN")} sold
+              </span>
+              <span>{product.stock.toLocaleString("en-IN")} {product.unit} left</span>
+            </div>
+            <div className="h-1.5 w-full overflow-hidden rounded-full bg-secondary">
+              <div
+                className={cn(
+                  "h-full rounded-full transition-all",
+                  stockPercent < 20
+                    ? "bg-destructive"
+                    : stockPercent < 50
+                      ? "bg-amber-500"
+                      : "bg-primary"
+                )}
+                style={{ width: `${stockPercent}%` }}
+              />
+            </div>
+          </div>
+        )}
 
         <div className="mt-auto flex items-center justify-between pt-1">
           <div>
